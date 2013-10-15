@@ -54,3 +54,25 @@ class Point:
 
     def distance_to_origin(self):
         return math.sqrt(self.x**2.0 + self.y**2.0)
+
+class Line:
+    def __init__(self, point1, point2):
+        self.point1 = point1
+        self.point2 = point2
+        self.slope = self._get_slope(point1, point2)
+        self.intercept = self._get_intercept(self.slope, point1)
+
+    def _get_slope(self, point1, point2):
+        return float(point1.y - point2.y) / (point1.x - point2.x)
+
+    def _get_intercept(self, slope, point):
+        return point.y - float(slope) * point.x
+
+    def intersection(self, other):
+        x_value = float(other.intercept - self.intercept) / (self.slope - other.slope)
+        y_value = float(x_value) * self.slope + self.intercept
+
+        return Point(x_value, y_value)
+
+    def perpendicular(self):
+        raise "Unimplemented"
