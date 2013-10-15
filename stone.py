@@ -16,8 +16,6 @@ class Stone:
         max_length = self.max_chip_length(vertex, left_neighbor, right_neighbor)
         angle = self.get_random_angle()
 
-    def generate_new_vertices(self, angle, 
-        
     def max_chip_length(self, vertex, left_neighbor, right_neighbor):
         return float(min(vertex.distance(left_neighbor), vertex.distance(right_neighbor))) / 2.0
 
@@ -33,9 +31,3 @@ class Stone:
 
     def _generate_potential_angle(self):
         return random.normalvariate(0.0, self.angle_deviation)
-
-class Chip:
-    def __init__(self, stone):
-        self.stone = stone
-
-    def 
