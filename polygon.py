@@ -1,8 +1,15 @@
 import math
 
 class Polygon:
+    # Vertices should be included in a clockwise order along the polygon. Vertices
+    # next to each other in the list will be assumed to have edges connecting them.
     def __init__(self, vertices):
         self.vertices = vertices
+        self.n = len(vertices)
+
+    def get_vertex(self, index):
+        i = (index % self.n)
+        return self.vertices[i]
 
     # Find the centroid of the stone based on the vertices. In other words, it is
     # the center of mass assuming uniform density.
@@ -16,10 +23,9 @@ class Polygon:
         total_x = 0
         total_y = 0
 
-        for i in xrange(len(self.vertices)):
-            j = (i+1) & (len(self.vertices) - 1)
-            total_x += (self.vertices[i].x + self.vertices[j].x) * self._point_convolution(i)
-            total_y += (self.vertices[i].y + self.vertices[j].y) * self._point_convolution(i)
+        for i in xrange(self.n):
+            total_x += (self.get_vertex(i).x + self.get_vertex(i+1).x) * self._point_convolution(i)
+            total_y += (self.get_vertex(i).y + self.get_vertex(i+1).y) * self._point_convolution(i)
 
         center_x = float(total_x) / (6.0 * signed_area)
         center_y = float(total_y) / (6.0 * signed_area)
@@ -27,7 +33,7 @@ class Polygon:
         return Point(center_x, center_y)
 
     def find_signed_area(self):
-        total = sum([self._point_convolution(i) for i in xrange(len(self.vertices))])
+        total = sum([self._point_convolution(i) for i in xrange(self.n)])
         return float(total) / 2.0
 
     # Returns the following:
@@ -35,8 +41,7 @@ class Polygon:
     #  x_i * y_{i+1} + x_{i+1} * y_i
     #
     def _point_convolution(self, i):
-        j = (i+1) % (len(self.vertices) - 1)
-        return self.vertices[i].x * self.vertices[j].y - self.vertices[j].x * self.vertices[i].y)
+        return self.get_vertex(i).x * self.get_vertex(i+1).y - self.get_vertex(i+1).x * self.get_vertex(i).y)
 
 
 class Point:
