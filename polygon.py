@@ -1,6 +1,6 @@
 import math
 
-class Stone:
+class Polygon:
     def __init__(self, vertices):
         self.vertices = vertices
 
