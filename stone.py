@@ -2,8 +2,8 @@ import random
 from shapely import geometry
 
 class VertexChipper:
-    def __init__(self, options = {}):
-        self.options = options
+    def __init__(self):
+        pass
 
     def chip_vertex(self, stone, index = None):
         raise "VertexChipper is an abstract class. Please implement chip_vertex"
@@ -26,38 +26,25 @@ class VertexChipper:
 # the midpoint of the line segment. A +fraction_mean+ of 0.1 means that the normal
 # distribution is centered around 0.1 times the distance of segment.
 class RandomPointVertexChipper(VertexChipper):
-
-    def chip_vertex(self, stone, index = None):
-        vertex = self.random_vertex(stone.polygon, index)
-
-
-class Stone:
-    def __init__(self, polygon, fraction_mean = 0.5, fraction_deviation = 0.15):
-        self.polygon = polygon
+    def __init__(self, fraction_mean = 0.5, fraction_deviation = 0.15):
         self.fraction_mean = fraction_mean
         self.fraction_deviation = fraction_deviation
 
-    def chip_vertex(self, index = None):
-        if not index:
-            index = random.randrange(len(self.polygon.exterior.coords)-1)
-
-        vertex = self.get_vertex(index)
-        left_neighbor = self.get_vertex(index-1)
-        right_neighbor = self.get_vertex(index+1)
+    def chip_vertex(self, stone, index = None):
+        vertex = self.random_vertex(stone.polygon, index)
+        left_neighbor = stone.polygon.exterior.coords[index-1]
+        right_neighbor = stone.polygon.exterior.coords[index+1]
         left_line = geometry.LineString([left_neighbor, vertex])
         right_line = geometry.LineString([right_neighbor, vertex])
 
         new_left_point = self.get_random_point_on_line(left_line)
         new_right_point = self.get_random_point_on_line(right_line)
 
-        new_exterior = list(self.polygon.exterior.coords)
+        new_exterior = list(stone.polygon.exterior.coords)
         new_exterior[index] = new_right_point
         new_exterior.insert(index, new_left_point)
 
-        self.polygon = geometry.Polygon(new_exterior)
-
-    def get_vertex(self, index):
-        return self.polygon.exterior.coords[index]
+        stone.polygon = geometry.Polygon(new_exterior)
 
     def get_random_point_on_line(self, line):
         return line.interpolate(self.get_random_fraction(), True).coords[0]
@@ -71,3 +58,7 @@ class Stone:
 
     def _generate_potential_fraction(self):
         return random.normalvariate(self.fraction_mean, self.fraction_deviation)
+
+class Stone:
+    def __init__(self, polygon):
+        self.polygon = polygon
