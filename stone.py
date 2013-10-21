@@ -4,7 +4,10 @@ from shapely import geometry
 from shapely import affinity
 
 class VertexChipper:
-    def __init__(self, stone):
+    def __init__(self):
+        pass
+
+    def set_stone(self, stone):
         self.stone = stone
 
     def chip(self, iterations):
@@ -37,16 +40,15 @@ class VertexChipper:
 #
 # The points are chosen with a normal distribution centered about the
 # +fraction_mean+ of the line segment. The standard deviation is given by the 
-# +fraction_deviation+.
+# +fraction_std+.
 #
 # A +fraction_mean+ of 0.5 means that the normal distribution is centered around
 # the midpoint of the line segment. A +fraction_mean+ of 0.1 means that the normal
 # distribution is centered around 0.1 times the distance of segment.
 class RandomPointVertexChipper(VertexChipper):
-    def __init__(self, stone, fraction_mean = 0.5, fraction_deviation = 0.15):
-        VertexChipper.__init__(self, stone)
+    def __init__(self, fraction_mean = 0.5, fraction_std = 0.15):
         self.fraction_mean = fraction_mean
-        self.fraction_deviation = fraction_deviation
+        self.fraction_std = fraction_std
 
     def chip_vertex(self, stone, index = None):
         vertex, index = self.random_vertex(stone.polygon, index)
@@ -68,32 +70,36 @@ class RandomPointVertexChipper(VertexChipper):
         return line.interpolate(self.get_random_number(0.0, 1.0), True).coords[0]
 
     def generate_random_number(self):
-        return random.normalvariate(self.fraction_mean, self.fraction_deviation)
+        return random.normalvariate(self.fraction_mean, self.fraction_std)
 
 class AngleVertexChipper(VertexChipper):
+    def __init__(self, angle_mean, angle_std):
+        self.angle_mean = angle_mean
+        self.angle_std = angle_std
+
     def chip_vertex(self, stone, index = None):
         vertex, index = self.random_vertex(stone.polygon, index)
-        centroid = stone.polygon.centroid()
+        centroid = stone.polygon.centroid.coords[0]
         vertex_line = geometry.LineString([centroid, vertex])
 
         angle, is_clockwise = self.get_random_angle()
-        new_line = self.create_rotated_line(base_line, angle)
-        polygon_intersection = self.get_intersection(stone, line, centroid)
+        new_line = self.create_rotated_line(vertex_line, angle)
+        polygon_intersection = self.get_intersection(stone, new_line, centroid)
 
         stone.polygon = self.remove_vertices_between(stone.polygon, polygon_intersection, vertex, is_clockwise)
 
     # Removes the vertices between +point+ and +vertex+.
     def remove_vertices_between(self, polygon, point, vertex, is_clockwise=True):
-        coordinates = polygon.exterior.coords
+        coordinates = list(polygon.exterior.coords)
         if not is_clockwise:
-            coordinates = coordinates.reverse()
+            coordinates.reverse()
 
         vertex_index = None
         point_index = None
         for i in xrange(len(coordinates)-1):
-            current_vertex = polygon.exterior.coords[i]
-            next_vertex = polygon.exterior.coords[i+1]
-            if current_vertex.almost_equals(vertex):
+            current_vertex = coordinates[i]
+            next_vertex = coordinates[i+1]
+            if vertex.almost_equals(current_vertex):
                 vertex_index = i
 
             line = geometry.LineString([current_vertex, next_vertex])
@@ -117,7 +123,7 @@ class AngleVertexChipper(VertexChipper):
     # The base_line should be specified so that the first point in the line is
     # the point from which the new line should intersect with the old line.
     def create_rotated_line(self, base_line, angle):
-        center = base_line[0]
+        center = base_line.coords[0]
         return affinity.rotate(base_line, angle, center, use_radians=True)
 
     # Returns and angle and whether or not you are moving in the forward direction
@@ -130,7 +136,7 @@ class AngleVertexChipper(VertexChipper):
             return (angle, True)
 
     def generate_random_number(self):
-        return random.normalvariate(self.angle_mean, self.angle_deviation)
+        return random.normalvariate(self.angle_mean, self.angle_std)
 
 class Stone:
     def __init__(self, polygon):

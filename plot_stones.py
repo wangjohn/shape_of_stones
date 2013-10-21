@@ -2,6 +2,18 @@ from matplotlib import pyplot
 from descartes.patch import PolygonPatch
 from stone import *
 
+# Random Point Chipping
+#
+# fraction_mean = 0.5
+# fraction_std = 0.15
+# vertex_chipper = RandomPointVertexChipper(fraction_mean, fraction_std)
+
+# Random Angle Vertex Chipping
+
+angle_mean = 0.3
+angle_std = 0.15
+vertex_chipper = AngleVertexChipper(angle_mean, angle_std)
+
 if __name__ == '__main__':
     def plot_coords(ax, ob):
         x, y = ob.xy
@@ -11,9 +23,9 @@ if __name__ == '__main__':
     for i in xrange(9):
         square = geometry.box(0.0, 0.0, 1.0, 1.0)
         stone = Stone(square)
-        chipper = RandomPointVertexChipper(stone, 0.1, 0.15)
+        vertex_chipper.set_stone(stone)
 
-        chipper.chip(50)
+        vertex_chipper.chip(50)
 
         ax = fig.add_subplot(int('33' + str(i)))
         plot_coords(ax, stone.polygon.exterior)
