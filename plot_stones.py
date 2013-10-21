@@ -11,7 +11,7 @@ if __name__ == '__main__':
     for i in xrange(9):
         square = geometry.box(0.0, 0.0, 1.0, 1.0)
         stone = Stone(square)
-        chipper = RandomVertexChipper(stone, 0.1, 0.15)
+        chipper = RandomPointVertexChipper(stone, 0.1, 0.15)
 
         chipper.chip(50)
 

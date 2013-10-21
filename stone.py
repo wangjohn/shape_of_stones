@@ -70,7 +70,7 @@ class RandomPointVertexChipper(VertexChipper):
     def generate_random_number(self):
         return random.normalvariate(self.fraction_mean, self.fraction_deviation)
 
-class RandomVertexConglomerationChipper(VertexChipper):
+class AngleVertexChipper(VertexChipper):
     def chip_vertex(self, stone, index = None):
         vertex = self.random_vertex(stone.polygon, index)
         centroid = stone.polygon.centroid()
