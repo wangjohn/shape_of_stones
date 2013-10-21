@@ -1,6 +1,36 @@
 import random
 from shapely import geometry
 
+class VertexChipper:
+    def __init__(self, options = {}):
+        self.options = options
+
+    def chip_vertex(self, stone, index = None):
+        raise "VertexChipper is an abstract class. Please implement chip_vertex"
+
+    def random_vertex(self, polygon, index = None):
+        if not index:
+            index = random.randrange(len(polygon.exterior.coords)-1)
+
+        return polygon.exterior.coords[index]
+
+# This vertex chipper selects a random vertex to chip, then gets the lines that
+# intersect vertex. It picks one point from each intersecting line and connects
+# those two points to chip the stone.
+#
+# The points are chosen with a normal distribution centered about the
+# +fraction_mean+ of the line segment. The standard deviation is given by the 
+# +fraction_deviation+.
+#
+# A +fraction_mean+ of 0.5 means that the normal distribution is centered around
+# the midpoint of the line segment. A +fraction_mean+ of 0.1 means that the normal
+# distribution is centered around 0.1 times the distance of segment.
+class RandomPointVertexChipper(VertexChipper):
+
+    def chip_vertex(self, stone, index = None):
+        vertex = self.random_vertex(stone.polygon, index)
+
+
 class Stone:
     def __init__(self, polygon, fraction_mean = 0.5, fraction_deviation = 0.15):
         self.polygon = polygon
