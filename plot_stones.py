@@ -10,10 +10,10 @@ if __name__ == '__main__':
     fig = pyplot.figure(1, dpi=90)
     for i in xrange(9):
         square = geometry.box(0.0, 0.0, 1.0, 1.0)
-        stone = Stone(square, 0.1, 0.15)
+        stone = Stone(square)
+        chipper = RandomVertexChipper(stone, 0.1, 0.15)
 
-        for j in xrange(50):
-            stone.chip_vertex()
+        chipper.chip(50)
 
         ax = fig.add_subplot(int('33' + str(i)))
         plot_coords(ax, stone.polygon.exterior)
