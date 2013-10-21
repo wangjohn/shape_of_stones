@@ -18,7 +18,7 @@ class VertexChipper:
         if not index:
             index = random.randrange(len(polygon.exterior.coords)-1)
 
-        return polygon.exterior.coords[index]
+        return (polygon.exterior.coords[index], index)
 
     def get_random_number(self, min_number, max_number):
         number = self.generate_random_number()
@@ -44,12 +44,12 @@ class VertexChipper:
 # distribution is centered around 0.1 times the distance of segment.
 class RandomPointVertexChipper(VertexChipper):
     def __init__(self, stone, fraction_mean = 0.5, fraction_deviation = 0.15):
-        self.stone = stone
+        VertexChipper.__init__(self, stone)
         self.fraction_mean = fraction_mean
         self.fraction_deviation = fraction_deviation
 
     def chip_vertex(self, stone, index = None):
-        vertex = self.random_vertex(stone.polygon, index)
+        vertex, index = self.random_vertex(stone.polygon, index)
         left_neighbor = stone.polygon.exterior.coords[index-1]
         right_neighbor = stone.polygon.exterior.coords[index+1]
         left_line = geometry.LineString([left_neighbor, vertex])
@@ -72,7 +72,7 @@ class RandomPointVertexChipper(VertexChipper):
 
 class AngleVertexChipper(VertexChipper):
     def chip_vertex(self, stone, index = None):
-        vertex = self.random_vertex(stone.polygon, index)
+        vertex, index = self.random_vertex(stone.polygon, index)
         centroid = stone.polygon.centroid()
         vertex_line = geometry.LineString([centroid, vertex])
 
