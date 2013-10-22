@@ -79,20 +79,22 @@ class AngleVertexChipper(VertexChipper):
         self.angle_std = angle_std
 
     def chip_vertex(self, stone, index = None):
-        vertex, index = self.random_vertex(stone.polygon, index)
         centroid = stone.polygon.centroid.coords[0]
-        vertex_line = geometry.LineString([centroid, vertex])
+        angle, _ = self.get_random_angle()
+        first_line = self.create_line_from_center(angle, centroid)
 
-        angle, is_clockwise = self.get_random_angle()
-        print "angle: %s, is_clockwise: %s" % (angle, is_clockwise)
-        new_line = self.create_rotated_line(vertex_line, angle)
-        print "new_line: %s" % (new_line)
-        polygon_intersection = self.get_intersection(stone, new_line, centroid)
-        print "original vertex: %s, intersection: %s" % (vertex, polygon_intersection)
+        angle_change, is_clockwise = self.get_random_angle()
+        second_line = self.create_rotated_line(first_line, angle_change)
 
-        polygon = self.remove_vertices_between(stone.polygon, polygon_intersection, vertex, is_clockwise)
-        print ""
+        first_intersection = self.get_intersection(stone, first_line, centroid)
+        second_intersection = self.get_intersection(stone, second_line, centroid)
+
+        polygon = self.remove_vertices_between(stone.polygon, first_intersection, second_intersection, is_clockwise)
         return Stone(polygon)
+
+    def create_line_from_center(self, angle, center):
+        cx, cy = center
+        return geometry.LineString([center, (cx + 1.0, cy)])
 
     # Removes the vertices between +point+ and +vertex+.
     def remove_vertices_between(self, polygon, point, vertex, is_clockwise=True):
