@@ -12,7 +12,7 @@ class VertexChipper:
 
     def chip(self, iterations):
         for i in xrange(iterations):
-            self.chip_vertex(self.stone)
+            self.stone = self.chip_vertex(self.stone)
 
     def chip_vertex(self, stone, index = None):
         raise "VertexChipper is an abstract class. Please implement chip_vertex"
@@ -64,7 +64,8 @@ class RandomPointVertexChipper(VertexChipper):
         new_exterior[index] = new_right_point
         new_exterior.insert(index, new_left_point)
 
-        stone.polygon = geometry.Polygon(new_exterior)
+        polygon = geometry.Polygon(new_exterior)
+        return Stone(polygon)
 
     def get_random_point_on_line(self, line):
         return line.interpolate(self.get_random_number(0.0, 1.0), True).coords[0]
@@ -83,15 +84,20 @@ class AngleVertexChipper(VertexChipper):
         vertex_line = geometry.LineString([centroid, vertex])
 
         angle, is_clockwise = self.get_random_angle()
+        print "angle: %s, is_clockwise: %s" % (angle, is_clockwise)
         new_line = self.create_rotated_line(vertex_line, angle)
+        print "new_line: %s" % (new_line)
         polygon_intersection = self.get_intersection(stone, new_line, centroid)
+        print "original vertex: %s, intersection: %s" % (vertex, polygon_intersection)
 
-        stone.polygon = self.remove_vertices_between(stone.polygon, polygon_intersection, vertex, is_clockwise)
+        polygon = self.remove_vertices_between(stone.polygon, polygon_intersection, vertex, is_clockwise)
+        print ""
+        return Stone(polygon)
 
     # Removes the vertices between +point+ and +vertex+.
     def remove_vertices_between(self, polygon, point, vertex, is_clockwise=True):
         coordinates = list(polygon.exterior.coords)
-        if not is_clockwise:
+        if is_clockwise:
             coordinates.reverse()
 
         vertex_index = None
@@ -105,11 +111,12 @@ class AngleVertexChipper(VertexChipper):
             line = geometry.LineString([current_vertex, next_vertex])
             if line.intersects(point):
                 point_index = i
-                break
 
-        new_coordinates = coordinates[:vertex_index] + [point.coords[0]] + coordinates[point_index+1:]
-        if not is_clockwise:
+        print "vertex_index: %s, point_index: %s" % (vertex_index, point_index)
+        new_coordinates = coordinates[:(vertex_index+1)] + [point.coords[0]] + coordinates[(point_index+1):]
+        if is_clockwise:
             new_coordinates = new_coordinates.reverse()
+        print new_coordinates
 
         return geometry.Polygon(new_coordinates)
 
@@ -119,10 +126,13 @@ class AngleVertexChipper(VertexChipper):
         return first_point.almost_equals(second_point)
 
     def get_intersection(self, stone, line, center):
-        while not line.intersects(stone.polygon):
+        while not line.crosses(stone.polygon):
             line = affinity.scale(line, xfact=2.0, yfact=2.0, origin=center)
 
-        return line.intersection(stone.polygon)
+        line_of_intersection = line.intersection(stone.polygon)
+        for coord in line_of_intersection.coords:
+            if not self.almost_equals(center, coord):
+                return geometry.Point(coord)
 
     # Creates a new line which is a specified angle from the base_line.
     # The base_line should be specified so that the first point in the line is
