@@ -99,7 +99,7 @@ class AngleVertexChipper(VertexChipper):
         for i in xrange(len(coordinates)-1):
             current_vertex = coordinates[i]
             next_vertex = coordinates[i+1]
-            if vertex.almost_equals(current_vertex):
+            if self.almost_equals(vertex, current_vertex):
                 vertex_index = i
 
             line = geometry.LineString([current_vertex, next_vertex])
@@ -113,11 +113,16 @@ class AngleVertexChipper(VertexChipper):
 
         return geometry.Polygon(new_coordinates)
 
+    def almost_equals(self, first_tuple, second_tuple):
+        first_point = geometry.Point(first_tuple)
+        second_point = geometry.Point(second_tuple)
+        return first_point.almost_equals(second_point)
+
     def get_intersection(self, stone, line, center):
         while not line.intersects(stone.polygon):
             line = affinity.scale(line, xfact=2.0, yfact=2.0, origin=center)
 
-        return line.intersection(stone.polygon).coords[0]
+        return line.intersection(stone.polygon)
 
     # Creates a new line which is a specified angle from the base_line.
     # The base_line should be specified so that the first point in the line is
