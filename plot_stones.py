@@ -10,8 +10,8 @@ from stone import *
 
 # Random Angle Vertex Chipping
 
-angle_mean = 1.0
-angle_std = 0.3
+angle_mean = 0.35
+angle_std = 0.35
 vertex_chipper = AngleVertexChipper(angle_mean, angle_std)
 
 if __name__ == '__main__':

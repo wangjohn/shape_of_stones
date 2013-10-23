@@ -76,7 +76,7 @@ class RandomPointVertexChipper(VertexChipper):
 
 # This vertex chipper creates chips by selecting random angles. The starting angle
 # is chosen uniformly from the range [0, 2*pi]. Then a second angle is chosen from
-# the range [0, 2*pi] from a normal distribution centered around mean +angle_mean+
+# the range [0, pi] from a normal distribution centered around mean +angle_mean+
 # with standard deviation of +angle_std+.
 #
 # We now have two angles, starting_angle and (starting_angle + second_angle). These
@@ -162,7 +162,7 @@ class AngleVertexChipper(VertexChipper):
     # Returns and angle and whether or not you are moving in the forward direction
     # in the clockwise direction
     def get_random_angle(self):
-        angle = self.get_random_number(0.0, 2*math.pi)
+        angle = self.get_random_number(0.0, math.pi)
         if angle < math.pi:
             return (angle, False)
         else:
