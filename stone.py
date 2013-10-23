@@ -114,15 +114,18 @@ class AngleVertexChipper(VertexChipper):
             if line.intersects(second_point):
                 second_index = i
 
-        new_coordinates = self.create_new_coordinates(coordinates, first_index, second_index)
+        inserted_points = [first_point.coords[0], second_point.coords[0]]
+        new_coordinates = self.create_new_coordinates(coordinates, first_index, second_index, inserted_points)
         if is_clockwise:
             new_coordinates = new_coordinates.reverse()
 
         return geometry.Polygon(new_coordinates)
 
-    # TODO: this needs to be fixed and we need to do some case work.
-    def create_new_coordinates(self, coordinates, first_index, second_index):
-        return coordinates[:(first_index+1)] + [point.coords[0]] + coordinates[(second_index+1):]
+    def create_new_coordinates(self, coordinates, first_index, second_index, inserted_points):
+        if second_index > first_index:
+            return coordinates[:(first_index+1)] + inserted_points + coordinates[(second_index+1):]
+        else:
+            return inserted_points + coordinates[(second_index+1):(first_index+1)] + [inserted_points[0]]
 
     def almost_equals(self, first_tuple, second_tuple):
         first_point = geometry.Point(first_tuple)
