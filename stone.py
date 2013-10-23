@@ -97,30 +97,32 @@ class AngleVertexChipper(VertexChipper):
         return geometry.LineString([center, (cx + 1.0, cy)])
 
     # Removes the vertices between +point+ and +vertex+.
-    def remove_vertices_between(self, polygon, point, vertex, is_clockwise=True):
+    def remove_vertices_between(self, polygon, first_point, second_point, is_clockwise=True):
         coordinates = list(polygon.exterior.coords)
         if is_clockwise:
             coordinates.reverse()
 
-        vertex_index = None
-        point_index = None
+        first_index = None
+        second_index = None
         for i in xrange(len(coordinates)-1):
             current_vertex = coordinates[i]
             next_vertex = coordinates[i+1]
-            if self.almost_equals(vertex, current_vertex):
-                vertex_index = i
-
             line = geometry.LineString([current_vertex, next_vertex])
-            if line.intersects(point):
-                point_index = i
 
-        print "vertex_index: %s, point_index: %s" % (vertex_index, point_index)
-        new_coordinates = coordinates[:(vertex_index+1)] + [point.coords[0]] + coordinates[(point_index+1):]
+            if line.intersects(first_point):
+                first_index = i
+            if line.intersects(second_point):
+                second_index = i
+
+        new_coordinates = self.create_new_coordinates(coordinates, first_index, second_index)
         if is_clockwise:
             new_coordinates = new_coordinates.reverse()
-        print new_coordinates
 
         return geometry.Polygon(new_coordinates)
+
+    # TODO: this needs to be fixed and we need to do some case work.
+    def create_new_coordinates(self, coordinates, first_index, second_index):
+        return coordinates[:(first_index+1)] + [point.coords[0]] + coordinates[(second_index+1):]
 
     def almost_equals(self, first_tuple, second_tuple):
         first_point = geometry.Point(first_tuple)
