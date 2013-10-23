@@ -81,7 +81,7 @@ class AngleVertexChipper(VertexChipper):
 
     def chip_vertex(self, stone, index = None):
         centroid = stone.polygon.centroid.coords[0]
-        angle, _ = self.get_random_angle()
+        angle = self.get_random_starting_angle()
         first_line = self.create_line_from_center(angle, centroid)
 
         angle_change, is_clockwise = self.get_random_angle()
@@ -158,6 +158,9 @@ class AngleVertexChipper(VertexChipper):
             return (angle, False)
         else:
             return (angle, True)
+
+    def get_random_starting_angle(self):
+        return random.uniform(0.0, 2*math.pi)
 
     def generate_random_number(self):
         return random.normalvariate(self.angle_mean, self.angle_std)
