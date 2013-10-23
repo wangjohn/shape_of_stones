@@ -36,7 +36,7 @@ class VertexChipper:
 
 
 # This vertex chipper selects a random vertex to chip, then gets the lines that
-# intersect vertex. It picks one point from each intersecting line and connects
+# form that vertex. It picks one point from each intersecting line and connects
 # those two points to chip the stone.
 #
 # The points are chosen with a normal distribution centered about the
@@ -74,6 +74,15 @@ class RandomPointVertexChipper(VertexChipper):
     def generate_random_number(self):
         return random.normalvariate(self.fraction_mean, self.fraction_std)
 
+# This vertex chipper creates chips by selecting random angles. The starting angle
+# is chosen uniformly from the range [0, 2*pi]. Then a second angle is chosen from
+# the range [0, 2*pi] from a normal distribution centered around mean +angle_mean+
+# with standard deviation of +angle_std+.
+#
+# We now have two angles, starting_angle and (starting_angle + second_angle). These
+# two angles are defined with respect to the centroid of the stone. A straight
+# line is drawn between the intersection of the first and second angles with the
+# stone. Vertices that lie outside of this new line are removed from the stone.
 class AngleVertexChipper(VertexChipper):
     def __init__(self, angle_mean, angle_std):
         self.angle_mean = angle_mean
