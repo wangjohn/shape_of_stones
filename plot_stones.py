@@ -28,8 +28,8 @@ if __name__ == '__main__':
         vertex_chipper.chip(50)
 
         ax = fig.add_subplot(int('33' + str(i)))
-        plot_coords(ax, stone.polygon.exterior)
-        polygon = stone.polygon
+        polygon = vertex_chipper.stone.polygon
+        plot_coords(ax, polygon.exterior)
         patch = PolygonPatch(polygon, facecolor='#6699cc', edgecolor='#6699cc', alpha=0.5, zorder=2)
         ax.add_patch(patch)
         ax.set_xlim(*[-0.5,1.5])

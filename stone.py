@@ -12,7 +12,8 @@ class VertexChipper:
 
     def chip(self, iterations):
         for i in xrange(iterations):
-            self.stone = self.chip_vertex(self.stone)
+            result = self.chip_vertex(self.stone)
+            self.stone = result
 
     def chip_vertex(self, stone, index = None):
         raise "VertexChipper is an abstract class. Please implement chip_vertex"
@@ -87,7 +88,6 @@ class AngleVertexChipper(VertexChipper):
         second_line = self.create_rotated_line(first_line, angle_change)
 
         polygon = self.remove_vertices_between(stone.polygon, first_line, second_line, is_clockwise)
-        print polygon
         return Stone(polygon)
 
     def create_line_from_center(self, angle, center):
