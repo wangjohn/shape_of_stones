@@ -1,0 +1,30 @@
+\documentclass[paper=a4,fontsize=11pt]{scrartcl}
+
+\usepackage{assignment}
+
+\begin{document}
+
+\section*{Equations}
+
+\begin{align}
+\dot{\vec{x}}& = FFT^{-1}\paren{diag(ik) \; FFT(\vec{x})}\\
+\ddot{\vec{x}}& = FFT^{-1}\paren{diag(-k^2) \; FFT(\vec{x})}\\
+\kappa& = \frac{\dot{\vec{x}} \times \ddot{\vec{x}}}{\dot{x}^3}\\
+g(\kappa)& = \tan^{-1}\paren{\kappa}\\
+\vec{x}^{n+1}& = \vec{x}^n + \Delta t \; g(\kappa) \hat{n}
+\end{align}
+
+In 2D
+\begin{align}
+a& = \bracket{a_1, a_2, \dotsc, a_N}^T\\
+b& = \bracket{b_1, b_2, \dotsc, b_N}^T\\
+\vec{x}& = \bracket{a, b}\\
+k& = \frac{\dot{a} \ddot{b} - \dot{b} \ddot{a}}{\paren{a^2 + b^2}^{3/2}}\\
+\hat{n}& = 
+	\begin{cases}
+		\bracket{-\dot{b}, \dot{a}} \quad \text{if} \quad \dot{a} \dot{b} > 0\\
+		\bracket{\dot{b}, -\dot{a}} \quad \text{otherwise}
+	\end{cases}
+\end{align}
+
+\end{document}
