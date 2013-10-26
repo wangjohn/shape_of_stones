@@ -24,6 +24,15 @@ class VertexChipper:
 
         return (polygon.exterior.coords[index], index)
 
+    def get_intersection(self, vertex_line, line, center):
+        while not line.crosses(vertex_line):
+            line = affinity.scale(line, xfact=2.0, yfact=2.0, origin=center)
+
+        object_of_intersection = line.intersection(vertex_line)
+        for coord in object_of_intersection.coords:
+            if not self.almost_equals(center, coord):
+                return geometry.Point(coord)
+
     def get_random_number(self, min_number, max_number):
         number = self.generate_random_number()
         while number < min_number or number > max_number:
@@ -31,9 +40,65 @@ class VertexChipper:
 
         return number
 
+    def create_line_from_center(self, angle, center):
+        cx, cy = center
+        line = geometry.LineString([center, (cx + 1.0, cy)])
+        return self.create_rotated_line(line, angle, center)
+
     def generate_random_number(self):
         raise "Subclasses of VertexChipper must implement this method."
 
+class AreaVertexChipper(VertexChipper):
+    def __init__(self, area = 0.1, fraction_mean = 0.5, fraction_std = 0.15):
+        self.area = area
+        self.fraction_mean = fraction_mean
+        self.fraction_std = fraction_std
+
+    def chip_vertex(self, stone, index = None):
+        vertex, index = self.random_vertex(stone.polygon, index)
+        left_neighbor = stone.polygon.exterior.coords[index-1]
+        right_neighbor = stone.polygon.exterior.coords[index+1]
+        left_line = geometry.LineString([left_neighbor, vertex])
+        right_line = geometry.LineString([right_neighbor, vertex])
+
+        new_left_point = self.get_random_point_on_line(left_line)
+        new_right_point = self.find_other_point(new_left_point, left_line, right_line, vertex)
+
+        new_exterior = list(stone.polygon.exterior.coords)
+        new_exterior[index] = new_right_point
+        new_exterior.insert(index, new_left_point)
+
+        polygon = geometry.Polygon(new_exterior)
+        return Stone(polygon)
+
+    def find_other_point(new_left_point, left_line, right_line, center_vertex):
+        raise "Unimplemented"
+
+    def get_random_point_on_line(self, line):
+        return line.interpolate(self.get_random_number(0.0, 1.0), True).coords[0]
+
+    def generate_random_number(self):
+        return random.normalvariate(self.fraction_mean, self.fraction_std)
+
+    def random_vertex(self, polygon, index = None):
+        angle = random.uniform(0.0, 2*math.pi)
+        center = polygon.centroid.coords[0]
+        line = self.create_line_from_center(angle, center)
+
+        while not line.crosses(vertex_line):
+            line = affinity.scale(line, xfact=2.0, yfact=2.0, origin=center)
+
+        for i in xrange(len(polygon.exterior.coords)-1):
+            coord1 = polygon.exterior.coords[i]
+            coord2 = polygon.exterior.coords[i+1]
+
+            polygon_line = geometry.LineString([coord1, coord2])
+            if polygon_line.intersects(line):
+                intersection = geometry.Point(polygon_line.intersection(line).coords[0])
+                if intersection.distance(geometry.Point(coord1)) < intersection.distance(geometry.Point(coord2)):
+                    return (polygon.exterior.coords[i], i)
+                else:
+                    return (polygon.exterior.coords[i+1], i+1)
 
 # This vertex chipper selects a random vertex to chip, then gets the lines that
 # form that vertex. It picks one point from each intersecting line and connects
@@ -99,11 +164,6 @@ class AngleVertexChipper(VertexChipper):
         polygon = self.remove_vertices_between(stone.polygon, first_line, second_line, is_clockwise)
         return Stone(polygon)
 
-    def create_line_from_center(self, angle, center):
-        cx, cy = center
-        line = geometry.LineString([center, (cx + 1.0, cy)])
-        return self.create_rotated_line(line, angle, center)
-
     # Removes the vertices between +point+ and +vertex+.
     def remove_vertices_between(self, polygon, first_line, second_line, is_clockwise=True):
         coordinates = list(polygon.exterior.coords)
@@ -141,23 +201,6 @@ class AngleVertexChipper(VertexChipper):
         first_point = geometry.Point(first_tuple)
         second_point = geometry.Point(second_tuple)
         return first_point.almost_equals(second_point)
-
-    def get_intersection(self, vertex_line, line, center):
-        while not line.crosses(vertex_line):
-            line = affinity.scale(line, xfact=2.0, yfact=2.0, origin=center)
-
-        object_of_intersection = line.intersection(vertex_line)
-        for coord in object_of_intersection.coords:
-            if not self.almost_equals(center, coord):
-                return geometry.Point(coord)
-
-    # Creates a new line which is a specified angle from the base_line.
-    # The base_line should be specified so that the first point in the line is
-    # the point from which the new line should intersect with the old line.
-    def create_rotated_line(self, base_line, angle, center = None):
-        if not center:
-            center = base_line.coords[0]
-        return affinity.rotate(base_line, angle, center, use_radians=True)
 
     # Returns and angle and whether or not you are moving in the forward direction
     # in the clockwise direction
