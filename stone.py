@@ -262,3 +262,10 @@ class AngleVertexChipper(VertexChipper):
 class Stone:
     def __init__(self, polygon):
         self.polygon = polygon
+
+    def distances_from_centroid(self):
+        center = geometry.Point(self.polygon.centroid)
+        distances = []
+        for coord in self.polygon.exterior.coords:
+            distances.append(center.distance(geometry.Point(coord)))
+        return distances

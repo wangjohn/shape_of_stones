@@ -1,6 +1,7 @@
 from matplotlib import pyplot
 from descartes.patch import PolygonPatch
 from stone import *
+import numpy
 
 # Random Point Chipping
 #
@@ -58,5 +59,21 @@ def plot_single(vertex_chipper, chips = 50):
     ax.set_ylim(*[-0.5,1.5])
     pyplot.show()
 
+def plot_histogram(vertex_chipper, iterations = 50, chips = 50):
+    histogram = []
+    for i in xrange(iterations):
+        square = geometry.box(0.0, 0.0, 1.0, 1.0)
+        stone = Stone(square)
+        vertex_chipper.set_stone(stone)
+        vertex_chipper.chip(chips)
+        polygon = vertex_chipper.stone.polygon
+
+        distances = vertex_chipper.stone.distances_from_centroid()
+        histogram.extend(distances)
+
+    hist = numpy.histogram(histogram)
+    pyplot.hist(hist[0], hist[1])
+
 if __name__ == '__main__':
-    plot_single(vertex_chipper, 50)
+    #plot_single(vertex_chipper, 50)
+    plot_histogram(vertex_chipper)
