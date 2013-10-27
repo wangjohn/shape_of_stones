@@ -10,9 +10,16 @@ from stone import *
 
 # Random Angle Vertex Chipping
 
-angle_mean = 0.35
-angle_std = 0.35
-vertex_chipper = AngleVertexChipper(angle_mean, angle_std)
+# angle_mean = 0.35
+# angle_std = 0.35
+# vertex_chipper = AngleVertexChipper(angle_mean, angle_std)
+
+# Area Chipping
+
+area = 0.1
+fraction_mean = 0.5
+fraction_std = 0.15
+vertex_chipper = AreaVertexChipper(area, fraction_mean, fraction_std)
 
 if __name__ == '__main__':
     def plot_coords(ax, ob):

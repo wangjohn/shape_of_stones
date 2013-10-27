@@ -45,6 +45,11 @@ class VertexChipper:
         line = geometry.LineString([center, (cx + 1.0, cy)])
         return self.create_rotated_line(line, angle, center)
 
+    def create_rotated_line(self, line, angle, center):
+        if not center:
+            center = line.coords[0]
+        return affinity.rotate(line, angle, center, use_radians=True)
+
     def generate_random_number(self):
         raise "Subclasses of VertexChipper must implement this method."
 
@@ -62,7 +67,8 @@ class AreaVertexChipper(VertexChipper):
         right_line = geometry.LineString([right_neighbor, vertex])
 
         new_left_point = self.get_random_point_on_line(left_line)
-        new_right_point = self.find_other_point(new_left_point, left_line, right_line, vertex)
+        #new_right_point = self.find_other_point(new_left_point, left_line, right_line, vertex)
+        new_right_point = self.get_random_point_on_line(right_line)
 
         new_exterior = list(stone.polygon.exterior.coords)
         new_exterior[index] = new_right_point
@@ -72,6 +78,12 @@ class AreaVertexChipper(VertexChipper):
         return Stone(polygon)
 
     def find_other_point(new_left_point, left_line, right_line, center_vertex):
+        theta = self.angle_between_lines(left_line, right_line, center_vertex)
+        numerator = 2.0 * self.area * math.sin(theta)
+        denominator = (4.0 * (self.area**2.0)) - (4.0 * (self.area) * (d**2) * math.sin(theta) * math.cos(theta)) + ((d**4.0) * (math.sin(theta)**2.0))
+        angle = math.acos( numerator / denominator )
+
+        perpendicular_distance = (numerator / denominator) * d
         raise "Unimplemented"
 
     def get_random_point_on_line(self, line):
@@ -85,7 +97,7 @@ class AreaVertexChipper(VertexChipper):
         center = polygon.centroid.coords[0]
         line = self.create_line_from_center(angle, center)
 
-        while not line.crosses(vertex_line):
+        while not line.crosses(polygon):
             line = affinity.scale(line, xfact=2.0, yfact=2.0, origin=center)
 
         for i in xrange(len(polygon.exterior.coords)-1):
