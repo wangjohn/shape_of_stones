@@ -18,6 +18,17 @@ class VertexChipper:
     def chip_vertex(self, stone, index = None):
         raise "VertexChipper is an abstract class. Please implement chip_vertex"
 
+    def almost_equals(self, first_tuple, second_tuple):
+        first_point = geometry.Point(first_tuple)
+        second_point = geometry.Point(second_tuple)
+        return first_point.almost_equals(second_point)
+
+    def get_distance(self, point1, point2):
+        p1 = geometry.Point(point1)
+        p2 = geometry.Point(point2)
+
+        return p1.distance(p2)
+
     def random_vertex(self, polygon, index = None):
         if not index:
             index = random.randrange(len(polygon.exterior.coords)-1)
@@ -60,31 +71,55 @@ class AreaVertexChipper(VertexChipper):
         self.fraction_std = fraction_std
 
     def chip_vertex(self, stone, index = None):
+        n = len(stone.polygon.exterior.coords) - 1
         vertex, index = self.random_vertex(stone.polygon, index)
-        left_neighbor = stone.polygon.exterior.coords[index-1]
-        right_neighbor = stone.polygon.exterior.coords[index+1]
+        left_neighbor = stone.polygon.exterior.coords[(index-1) % n]
+        right_neighbor = stone.polygon.exterior.coords[(index+1) % n]
         left_line = geometry.LineString([left_neighbor, vertex])
         right_line = geometry.LineString([right_neighbor, vertex])
 
         new_left_point = self.get_random_point_on_line(left_line)
-        #new_right_point = self.find_other_point(new_left_point, left_line, right_line, vertex)
+        d = self.get_distance(new_left_point, vertex)
+        #new_right_point = self.find_other_point(new_left_point, left_line, right_line, d, vertex, stone.polygon)
         new_right_point = self.get_random_point_on_line(right_line)
 
         new_exterior = list(stone.polygon.exterior.coords)
         new_exterior[index] = new_right_point
         new_exterior.insert(index, new_left_point)
+        if index == n:
+            new_exterior[0] = new_right_point
+        if index == 0:
+            new_exterior[-1] = new_left_point
 
         polygon = geometry.Polygon(new_exterior)
         return Stone(polygon)
 
-    def find_other_point(new_left_point, left_line, right_line, center_vertex):
+    def find_other_point(self, new_left_point, left_line, right_line, d, center_vertex, polygon):
         theta = self.angle_between_lines(left_line, right_line, center_vertex)
         numerator = 2.0 * self.area * math.sin(theta)
         denominator = (4.0 * (self.area**2.0)) - (4.0 * (self.area) * (d**2) * math.sin(theta) * math.cos(theta)) + ((d**4.0) * (math.sin(theta)**2.0))
-        angle = math.acos( numerator / denominator )
+        expression = numerator / math.sqrt(denominator)
+        angle = math.acos(expression)
 
-        perpendicular_distance = (numerator / denominator) * d
-        raise "Unimplemented"
+        perpendicular_distance = expression * d
+        new_line = left_line.interpolate(perpendicular_distance)
+        new_line = affinity.rotate(new_line, angle, origin=center_vertex)
+        perpendicular_point = next(coord for coord in new_line.coords if not self.almost_equals(coord, center_vertex))
+
+        print perpendicular_point
+
+    def angle_between_lines(self, line1, line2, vertex):
+        coord1 = next(coord for coord in line1.coords if not self.almost_equals(coord, vertex))
+        coord2 = next(coord for coord in line2.coords if not self.almost_equals(coord, vertex))
+
+        v1 = (coord1[0] - vertex[0], coord1[1] - vertex[1])
+        v2 = (coord2[0] - vertex[0], coord2[1] - vertex[1])
+
+        dot_product = v1[0]*v2[0] + v1[1]*v2[1]
+        mag1 = math.sqrt(v1[0]**2.0 + v1[1]**2.0)
+        mag2 = math.sqrt(v2[0]**2.0 + v2[1]**2.0)
+
+        return math.acos(float(dot_product) / (mag1 * mag2))
 
     def get_random_point_on_line(self, line):
         return line.interpolate(self.get_random_number(0.0, 1.0), True).coords[0]
@@ -106,8 +141,8 @@ class AreaVertexChipper(VertexChipper):
 
             polygon_line = geometry.LineString([coord1, coord2])
             if polygon_line.intersects(line):
-                intersection = geometry.Point(polygon_line.intersection(line).coords[0])
-                if intersection.distance(geometry.Point(coord1)) < intersection.distance(geometry.Point(coord2)):
+                intersection = polygon_line.intersection(line).coords[0]
+                if self.get_distance(intersection, coord1) < self.get_distance(intersection, coord2):
                     return (polygon.exterior.coords[i], i)
                 else:
                     return (polygon.exterior.coords[i+1], i+1)
@@ -208,11 +243,6 @@ class AngleVertexChipper(VertexChipper):
             return coordinates[:(first_index+1)] + inserted_points + coordinates[(second_index+1):]
         else:
             return inserted_points + coordinates[(second_index+1):(first_index+1)] + [inserted_points[0]]
-
-    def almost_equals(self, first_tuple, second_tuple):
-        first_point = geometry.Point(first_tuple)
-        second_point = geometry.Point(second_tuple)
-        return first_point.almost_equals(second_point)
 
     # Returns and angle and whether or not you are moving in the forward direction
     # in the clockwise direction
