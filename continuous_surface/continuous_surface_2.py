@@ -13,8 +13,8 @@ from numpy.polynomial import chebyshev
 
 # -----------------------------------------------------------------------------
 
-
-N_PLOT_PTS = 1E3
+RESOLUTION_FACTOR = 2**(1)
+PLOT_NPTS_FACTOR = 1E1
 T = 0.1
 N_STEPS = T/1E-2
 N_PTS = 20
@@ -26,8 +26,8 @@ def remove_points(shape):
     return arctan((shape.curvature()-1)*5) + pi/2
 
 def remove_lowest(shape):
-    y_min = amin(increase_points(shape.x_hat, 1E2)[:,1], axis=0)
-    g = 1/(absolute(shape.x[:,1] - y_min)+1E-1)
+    y_min = amin(get_values(increase_spectral_points(shape.x_hat, 1E1))[:,1], axis=0)
+    g = 1/(10*absolute(shape.x[:,1] - y_min)+1E-1)
     g -= 1E-1
     g[g<0] = 0
     return g
@@ -98,6 +98,9 @@ def get_spectral(x):
 def get_values(x_hat):
     return real(fft.irfft(x_hat))
 
+def spectral_npts(x_hat):
+    return (len(x_hat)-1)*2
+
 @apply_to_cols
 def spectral_derivative(x_hat, n=1):
     k = arange(len(x_hat))
@@ -108,45 +111,41 @@ def spectral_derivative(x_hat, n=1):
     return w_hat
 
 @apply_to_cols
-def spectral_integral(x_hat, n=1, endpoint=False):
+def spectral_integral(x_hat, n=1):
     k = arange(len(x_hat))
     w_hat = x_hat * hstack([0, (1/(1j*k[1:])**n)])
     if n % 2 == 1:
         w_hat[-1] = 0
-
-    x = real(get_spectral(w_hat))
+    w_hat[0] = linspace(0, 2*pi, spectral_npts(x_hat), endpoint=False)
     
-    n_pts = len(x)
-    if endpoint:
-        s = linspace(0, 2*pi, n_pts+1)
-    else:
-        s = linspace(0, 2*pi, n_pts, endpoint=False)
-    x += real((1/n_pts)*s*x_hat[0])
-    
-    return x
+    return w_hat
 
 @apply_to_cols
-def increase_points(x_hat, min_pts):
-    if n_pts < min_pts:
-        n_pts = (len(x_hat)-1)*2
-        x_hat = append(x_hat, zeros((min_pts - n_pts)/2))
-        x_hat *= min_pts / n_pts
+def increase_spectral_points(x_hat, factor):
+    n_pts = spectral_npts(x_hat)
+    if factor > 1:
+        x_hat = append(x_hat, zeros((n_pts*(factor - 1))/2))
 
+    elif factor < 1:
+        x_hat = x_hat[:int((n_pts*factor)/2+1)]
+
+    x_hat *= spectral_npts(x_hat) / n_pts
     return x_hat
 
 def plot_spectral(x_hat):
-    n_pts = max((len(x_hat)-1)*2, N_PLOT_PTS)
+    n_pts = spectral_npts(x_hat) * PLOT_NPTS_FACTOR
     s_fine = linspace(0, 2*pi, n_pts)
-    x_fine = increase_points(x_hat, n_pts)
+    x_fine = get_values(increase_spectral_points(x_hat, PLOT_NPTS_FACTOR))
     plot(s_fine, x_fine)
 
 
 class SpectralShape(object):
     def __init__(self, x):
         self.x = x
+        self.resolution_factor = RESOLUTION_FACTOR
 
     def __len__(self):
-        return (len(self.x_hat)-1)*2
+        return int(spectral_npts(self._x_hat) * self.resolution_factor)
 
     @property
     def x(self):
@@ -154,34 +153,42 @@ class SpectralShape(object):
 
     @x.setter
     def x(self, value):
-        self.x_hat = get_spectral(value)
+        self._x_hat = get_spectral(value)
+
+    @property
+    def x_hat(self):
+        return increase_spectral_points(self._x_hat, self.resolution_factor)
+
+    @x_hat.setter
+    def x_hat(self, value):
+        self._x_hat = value.copy()
 
     def surface_normal(self):
-        x_dot = spectral_derivative(self.x_hat, n=1)
+        x_dot = get_values(spectral_derivative(self.x_hat, n=1))
         x_dot_n = x_dot[:,(1,0)]
         x_dot_n *= [-1,1]
         x_dot_n /= frobenius_norm(x_dot_n)[:,newaxis]
         return x_dot_n
 
     def curvature(self):
-        x_dot = spectral_derivative(self.x_hat, n=1)
-        x_ddot = spectral_derivative(self.x_hat, n=2)
+        x_dot = get_values(spectral_derivative(self.x_hat, n=1))
+        x_ddot = get_values(spectral_derivative(self.x_hat, n=2))
             
         k = cross(x_dot, x_ddot) / frobenius_norm(x_dot)**3
         return k
 
     def dxdt(self, method):
         dx_hatdt = get_spectral(method(self)[:,newaxis] * self.surface_normal())
-        # dx_hatdt[2:,0] = 0
-        return dx_hatdt
+        return dx_hatdt[:len(self._x_hat)]
 
     def plot(self):
-        n_pts = maximum(len(self), N_PLOT_PTS)
+        n_pts = len(self) * PLOT_NPTS_FACTOR
         s_fine = linspace(0, 2*pi, n_pts, endpoint=False)
-        x_fine = increase_points(self.x_hat, n_pts)
+        
+        x_fine = get_values(increase_spectral_points(self._x_hat, PLOT_NPTS_FACTOR))
 
         plot(x_fine[:,0], x_fine[:,1])
-        plot(self.x[:,0], self.x[:,1], 'x')
+        # plot(self.x[:,0], self.x[:,1], 'x')
         axis('equal')
 
 
@@ -200,12 +207,12 @@ def run_simulation(shape, t_steps, method):
         shape.x_hat = real_to_complex(x_hat_real.reshape(-1,4))
         return complex_to_real(shape.dxdt(method)).flatten()
 
-    x_hat_real = complex_to_real(shape.x_hat).flatten()
+    x_hat_real = complex_to_real(shape._x_hat).flatten()
     x_hat_simulation = integrate.odeint(func, x_hat_real, t_steps)
     x_hat_simulation = x_hat_simulation.reshape(len(t_steps), -1, 4)
 
-    # for i in arange(N_STEPS, step=int(N_STEPS/10)):
-    for i in arange(5):
+    for i in arange(N_STEPS, step=int(N_STEPS/4)):
+    # for i in arange(6):
         shape.x_hat = real_to_complex(x_hat_simulation[i])
         shape.plot()
         # plot(linspace(0, 2*pi, N_PTS, endpoint=False), shape.x[:,0], 'o')
@@ -220,3 +227,12 @@ shape = {"circle":circle, "ellipse": ellipse, "blob": blob}[SHAPE](s)
 t = linspace(0, T, N_STEPS)
 
 run_simulation(shape, t, method)
+
+# x = sin(s)
+# plot(s, x)
+
+# x_hat = increase_spectral_points(get_spectral(x), factor=2)
+# s_fine = linspace(0, 2*pi, N_PTS*2, endpoint=False)
+# x_fine = get_values(x_hat)
+# plot(s_fine, x_fine)
+# show()
