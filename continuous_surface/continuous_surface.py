@@ -15,7 +15,7 @@ from numpy.polynomial import chebyshev
 
 
 PLOT_RESOLUTION = 1E3
-T = 0.5
+T = 0.1
 N_STEPS = T/0.01
 N_PTS = 20
 H_MIN = 0.2
@@ -91,7 +91,7 @@ def get_spectral(x, s):
     n_pts = len(s)
     k = arange(n_pts/2+1)
 
-    mat = exp(1j*s*k[:,newaxis])
+    mat = exp(-1j*s*k[:,newaxis])
 
     return mat.dot(x)
 
@@ -239,17 +239,14 @@ class SpectralShape(object):
 
 
 def run_simulation(shape, t_steps, method):
-    
-    
+
     def func(x, t):
         shape.x = x
         return shape.convert_to_full(shape.dxdt(method)).flatten()
 
-    shape.plot()
-    figure()
-
     x_simulation = integrate.odeint(func, shape.x.flatten(), t_steps).reshape(len(t_steps), -1, 2)
 
+    print(shape._valid_points)
     for i in arange(N_STEPS, step=int(N_STEPS/4)):
         shape.x = x_simulation[i]
         shape.plot()
@@ -262,4 +259,9 @@ s = linspace(0, 2*pi, N_PTS, endpoint=False)
 shape = {"circle":circle, "ellipse": ellipse, "blob": blob}[SHAPE](s)
 t = linspace(0, T, N_STEPS)
 
-run_simulation(shape, t, method)
+# run_simulation(shape, t, method)
+
+
+
+plot_spectral(linspace(0, 2*pi, N_PTS-3, endpoint=False), sin(delete(s, [5, 8, 10])))
+show()
