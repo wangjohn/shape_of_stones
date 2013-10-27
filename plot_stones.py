@@ -73,6 +73,7 @@ def plot_histogram(vertex_chipper, iterations = 50, chips = 50):
 
     hist = numpy.histogram(histogram)
     pyplot.hist(hist[0], hist[1])
+    pyplot.show()
 
 if __name__ == '__main__':
     #plot_single(vertex_chipper, 50)
