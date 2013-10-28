@@ -40,9 +40,9 @@ We shall now give a formal definition of the chipping process. A chip for a prob
   \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \in [0,1]$ such that $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1} \pmod{n}}$. The distribution of $t$ is defined by the probability distribution $\mathrm{P}$ so that $t \sim \mathrm{P}$.
   \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1} \pmod{n}}$.
   \item Create a new stone $s'$ whose vertices are given by
-    \begin{eqnarray}
+    \begin{eqnarray*}
       s' = \{ \bvec{v}_1, \ldots, \bvec{v}_{j-1}, \bvec{p}_1, \bvec{p}_2, \bvec{v}_{j+1}, \ldots, \bvec{v}_n \}
-    \end{eqnarray}
+    \end{eqnarray*}
     Here, the vertex $\bvec{v}_j$ has been replaced by $\bvec{p}_1$ and $\bvec{p}_2$ in the list of vertices for $s$. The new stone $s'$ now has one more line segment and vertex than the old stone $s$.
 \end{enumerate}
 
@@ -58,8 +58,7 @@ To examine the accuracy of our model, we performed computer simulations using th
   \begin{center}
     \includegraphics[width=4in]{area_chipper_sample.pdf}
   \end{center}
-  \label{fig:area_chipper_sample}
-  \caption{Chipping Process for a Unit Square}
+  \caption{Chipping Process for a Unit Square \label{fig:area_chipper_sample}}
 \end{figure}
 
 Figure \ref{fig:area_chipper_sample} shows the results for nine chipping process runs. The parameters used in these runs were $\mathrm{P} = \mathrm{N}(0.5, 0.15)$, $A = 0.05$, $k = 50$, and $s = \{(0,0), (1,0), (1,1), (0,1)\}$. The chipping processes each started out with a stone which was a unit square. The stones were chipped 50 times by the method described by the model. The probability distribution $\mathrm{P}$ is a normal distribution so that $t = 0.5$ is the most likely $t$ to choose. In other words, it is most likely that $\bvec{p}_1$ will be chosen as the midpoint of the line segment $\bvec{l}_1$.
