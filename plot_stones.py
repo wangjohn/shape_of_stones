@@ -18,7 +18,7 @@ import numpy
 # Area Chipping
 
 area = 0.1
-fraction_mean = 0.5
+fraction_mean = 0.025
 fraction_std = 0.15
 vertex_chipper = AreaVertexChipper(area, fraction_mean, fraction_std)
 
@@ -71,10 +71,18 @@ def plot_histogram(vertex_chipper, iterations = 50, chips = 50):
         distances = vertex_chipper.stone.distances_from_centroid()
         histogram.extend(distances)
 
-    hist = numpy.histogram(histogram)
-    pyplot.hist(hist[0], hist[1])
+    print float(sum(histogram)) / len(histogram)
+    ax = pyplot.axes()
+    hist = numpy.histogram(histogram, [i*0.05 for i in xrange(18)])
+    pos = numpy.arange(len(hist[0]))
+    ax.set_xticks(pos + 1.0/2)
+    ax.set_xticklabels(hist[1])
+    ax.set_xlabel('Distance from Centroid')
+    pyplot.bar(pos, hist[0], 1.0, color='r')
     pyplot.show()
 
 if __name__ == '__main__':
     #plot_single(vertex_chipper, 50)
-    plot_histogram(vertex_chipper)
+    #plot_histogram(vertex_chipper)
+    plot_many(vertex_chipper, 50)
+
