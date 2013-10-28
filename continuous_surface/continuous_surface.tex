@@ -37,19 +37,21 @@ For our model we chose parameters, $\alpha = 10, \; \beta = \gamma = 0.1$.
 
 \subsection*{Surface Equations}
 
-Our surface is modeled with two vectors, $x_1, x_2 \in \R^N$ for some resolution $N$. Then $\bvec{x}& \coloneqq \bracket{x_1^T, x_2^T}$
+Our surface is modeled with two vectors, $x_1, x_2 \in \R^N$ for some resolution $N$. Then $\bvec{x} \coloneqq \bracket{x_1^T, x_2^T}$, with $x_1$ and $x_2$ being the two coordinates of points sampled counterclockwise along the surface.
 
 \begin{align}
-  \kappa& = \frac{\dot{\bvec{x}} \times \ddot{\bvec{x}}}{\dot{x}^3}
+  \dot{\bvec{x}}& \coloneqq \frac{d\bvec{x}}{dt} \tag{Velocity}\\
+  \ddot{\bvec{x}}& \coloneqq \frac{d^2\bvec{x}}{dt^2} \tag{Acceleration}\\
+  \kappa& = \frac{\dot{\bvec{x}} \times \ddot{\bvec{x}}}{\dot{x}^3} \tag{Curvature}
 \end{align}
 
 \subsection*{Numerical Modeling}
 
-Rather than implementing a continuous surface as a vector of points in $\R^2$, we chose to model the surface parametrically and represented $x_1$ and $x_2$ as separate Fourier series, parameterized by $x \in [0, 2\pi]$.
+We chose to model the surface parametrically with a Discrete Fourier series using spectral methods. Our processes tend to smooth the surfaces out over time, so spectral methods would capture this much better than a local approximation of the surface using finite differences which only act locally at points. All of our surface are in $\R^2$, so we will use the Real Fast Fourier Transform (equations in the appendix).
 
 \begin{align}
-  \dot{\bvec{x}}& = FFT^{-1}\paren{diag(ik) \; FFT(\bvec{x})}\\
-  \ddot{\bvec{x}}& = FFT^{-1}\paren{diag(-k^2) \; FFT(\bvec{x})}\\
+  \dot{\bvec{x}}& = RFFT^{-1}\paren{diag(ik) \; RFFT(\bvec{x})}\\
+  \ddot{\bvec{x}}& = RFFT^{-1}\paren{diag(-k^2) \; RFFT(\bvec{x})}\\
 \end{align}
 
 \begin{align}
@@ -57,20 +59,39 @@ Rather than implementing a continuous surface as a vector of points in $\R^2$, w
   k& = \frac{\dot{a} \ddot{b} - \dot{b} \ddot{a}}{\paren{a^2 + b^2}^{3/2}}
 \end{align}
 
+\subsection*{Example Surface}
+
+The example shape that we will use throughout this section is shown in Figure \ref{fig:blob-shape}.
+
+\begin{figure}[H]
+    \begin{center}
+      \includegraphics[keepaspectratio]{blob_shape.pdf}
+    \end{center}
+  \vspace{-.2in} % corrects bad spacing
+  \caption{\label{fig:blob-shape} Example shape.}
+\end{figure}
+
+The equations for the shape are the following ($T_i$ is the i\textsuperscript{th} Chebyshev polynomial)
+
+\begin{align*}
+  x_1(s) = \cos(s) \paren{2 T_0(\paren{\frac{s-\pi}{\pi}}) + T_2\paren{\frac{s-\pi}{\pi}}}\\
+  x_2(s) = \sin(s) \paren{2 T_0(\paren{\frac{s-\pi}{\pi}}) + T_4(\paren{\frac{s-\pi}{\pi}})}
+\end{align*}
+
 \subsection*{Point Collision Problems}
 
-Unfortunately, as simple as it is to model the surface with Fourier series, it is very difficult to use for modeling the changing surface. As can be seen in Figure \ref{fig:remove-lowest-blob-bad}, the process works well for a short time period, but then sharp points start to form.
+Unfortunately, the simplicity of modeling the surface with Fourier series breaks down when the surface starts to shrink. As can be seen in Figure \ref{fig:remove-lowest-blob-bad}, the process works well for a short time period, but sharp points start to form as time increases.
 
 
 \begin{figure}[H]
     \begin{center}
-      \includegraphics[keepaspectratio]{remove_lowest_blob_bad.pdf}
+      \includegraphics[keepaspectratio]{remove_lowest_blob_bad_zoom.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{\label{fig:remove-lowest-blob-bad}}
 \end{figure}
 
-To see why this occurs, we will show the same figure, but with the evaluation points shown. Looking closely, it can be seen that the sharp corners form when evaluation points get too close to each other. Our guess is that this occurs because we are using discrete time stepping, so the shape's change with time is only an approximation. This is fine when the evaluation points are far from each other, but when they get close to each other, these errors . Furthermore, the method is not stable, and the errors grow. The 
+To see why this occurs, we will show the same figure, but with the evaluation points shown. Looking closely, it can be seen that the sharp corners form when evaluation points get too close to each other. Our guess is that this occurs because we are using discrete time stepping, so the shape's change with time is only an approximation. This is fine when the evaluation points are far from each other, but when they get close to each other, the errors become significant and affect the direction of the surface unit normal vectors. Rather  
 
 \begin{figure}[H]
     \begin{center}
@@ -112,6 +133,8 @@ To redistribute points, we need to find some smooth function $f(s)$ that will ma
 
 $\bvec{a}_t$ is the component of $\ddot{\bvec{x}}$ tangent to the surface. $\dot{\bvec{x}}$ is inversely proportional to the density of points on the surface. We want to shift points away from denser areas, which means moving in the direction of larger $\dot{\bvec{x}}$.
 
+As can be seen in Figure \ref{fig:remove-points-blob-good}, this dramatically improves our algorithm.
+
 \begin{figure}[H]
     \begin{center}
       \includegraphics[keepaspectratio]{remove_points_blob_good.pdf}
@@ -119,6 +142,8 @@ $\bvec{a}_t$ is the component of $\ddot{\bvec{x}}$ tangent to the surface. $\dot
   \vspace{-.2in} % corrects bad spacing
   \caption{\label{fig:remove-points-blob-good}}
 \end{figure}
+
+If we plot the evaluation points (Figure \ref{fig:remove-points-blob-good-points}, it can be seen that the points redistribute themselves over time to stay evenly spaced on the surface.
 
 \begin{figure}[H]
     \begin{center}
@@ -128,14 +153,23 @@ $\bvec{a}_t$ is the component of $\ddot{\bvec{x}}$ tangent to the surface. $\dot
   \caption{\label{fig:remove-points-blob-good-points}}
 \end{figure}
 
-\begin{figure}[H]
-    \begin{center}
-      \includegraphics[keepaspectratio]{remove_lowest_ellipse_good.pdf}
-    \end{center}
-  \vspace{-.2in} % corrects bad spacing
-  \caption{\label{fig:remove-lowest-ellipse-good}}
-\end{figure}
 
+\section*{Appendix}
 
+\subsection*{Real Fourier Transform}
 
+The Real Fourier transform is defined as
 
+\begin{align*}
+  \bhat{x} \coloneqq RFFT(x)_k\\
+  & \coloneqq \sum_{n=0}^{N-1} e^{-2\pi i k (n/N)} x_n \qquad \text{for} \quad k = 0, \dotsc, N/2+1
+\end{align*}
+
+Note: the terms $FFT$ and Fourier transform are used interchangeably in the paper. Technically they are not synonyms, but it is common practice to use the terms interchangeably.
+
+And the inverse transform is defined as
+
+\begin{align*}
+  x& \coloneqq RFFT^{-1}(\bhat{x})\\
+  & \coloneqq \frac{1}{N} \paren{\sum_{k=0}^{N/2+1} e^{2\pi i k (n/N)} X_k + \sum_{k=N/2+2}^{N-1} e^{2\pi i k (n/N)} \bar{X}_k} \qquad \text{for} \quad n = 0, \dotsc, N-1
+\end{align*}
