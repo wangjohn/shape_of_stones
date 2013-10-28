@@ -1,0 +1,54 @@
+\ProvidesPackage{paper}
+
+\usepackage{amsmath,amssymb,amsfonts}   % For better support of math
+\usepackage{graphicx}	        % Enable for eps and pdf figures, if they occur
+\usepackage{caption}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{epstopdf}
+\usepackage[hidelinks]{hyperref} % Enable embedded hyperlinks.
+\hypersetup{
+	hidelinks, colorlinks, linkcolor=black, citecolor=black, urlcolor=red
+}
+        
+% Commands to force sequential numbering:
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{examples}[theorem]{Examples}
+\newtheorem{remarks}[theorem]{Remarks}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+% Define abs norm, paren, bracket, cbracket, and innerproduct
+\usepackage{mathtools}
+\DeclarePairedDelimiter\tempabs{\lvert}{\rvert}
+\DeclarePairedDelimiter\tempnorm{\lVert}{\rVert}
+\DeclarePairedDelimiter\tempinnerproduct{\langle}{\rangle}
+\DeclarePairedDelimiter\tempparen{(}{)}
+\DeclarePairedDelimiter\tempbracket{[}{]}
+\DeclarePairedDelimiter\tempcbracket{\{}{\}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+% Swap * functionality
+\makeatletter
+\def\abs{\@ifstar{\tempabs}{\tempabs*}}
+\def\norm{\@ifstar{\tempnorm}{\tempnorm*}}
+\def\innerproduct{\@ifstar{\tempinnerproduct}{\tempinnerproduct*}}
+\def\paren{\@ifstar{\tempparen}{\tempparen*}}
+\def\bracket{\@ifstar{\tempbracket}{\tempbracket*}}
+\def\cbracket{\@ifstar{\tempcbracket}{\tempcbracket*}}
+\makeatother
+
+% blackboard bold , for ``complex,'' etc
+\newcommand{\C}{\mathbb C} 
+\newcommand{\R}{\mathbb R} 
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\N}{\mathbb N}
+\newcommand{\bvec}[1]{\mathbf{#1}}
+\newcommand{\bhat}[1]{\mathbf{\hat{#1}}}
