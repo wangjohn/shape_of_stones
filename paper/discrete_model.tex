@@ -37,7 +37,7 @@ We shall now give a formal definition of the chipping process. A chip for a prob
 \begin{enumerate}
   \item Select a vertex $\bvec{v}_j$ from $s$. To select this vertex, we find the centroid $\bvec{c}_s$ of stone $s$ and choose an angle $\gamma \in [0, 2\pi)$ uniformly at random. Now, define the ray $\bvec{l}$ as the ray with an initial point of $\bvec{c}_s$ which extends outwards infinitely at an angle of $\gamma$ from the horizontal. The vertex with the minimum perpendicular distance to $\bvec{l}$ will be $\bvec{v}_j$.
   \item Given vertex $\bvec{v}_j$, define $\bvec{l}_1$ as the line segment which connects $\bvec{v}_j$ and $\bvec{v}_{{j-1} \pmod{n}}$. Similarly, define $\bvec{l}_2$ as the line segment connecting $\bvec{v}_j$ and $\bvec{v}_{{j+1} \pmod{n}}$.
-  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \in [0,1]$ such that $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v_{{j-1} \pmod{n}}$. The distribution of $t$ is defined by the probability distribution $\mathrm{P}$ so that $t \sim \mathrm{P}$.
+  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \in [0,1]$ such that $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1} \pmod{n}}$. The distribution of $t$ is defined by the probability distribution $\mathrm{P}$ so that $t \sim \mathrm{P}$.
   \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1} \pmod{n}}$.
   \item Create a new stone $s'$ whose vertices are given by $s' = \{ \bvec{v}_1, \ldots, \bvec{v}_{j-1}, \bvec{p}_1, \bvec{p}_2, \bvec{v}_{j+1}, \ldots, \bvec{v}_n \}$. Here, the vertex $\bvec{v}_j$ has been replaced by $\bvec{p}_1$ and $\bvec{p}_2$ in the list of vertices for $s$. The new stone $s'$ now has one more line segment and vertex than the old stone $s$.
 \end{enumerate}
@@ -87,4 +87,3 @@ Choosing a different distribution for $\mathrm{P}$ yields dramatically different
 \end{figure}
 
 One can see that the distribution of vertex distances from the centroid are skewed so that there are far more vertices which are further away from the centroid. The resulting stones are much flatter than the stones shown in figure \ref{fig:area_chipper_sample}. The intuitive explanation for this is that there is a much higher probability that the shear will not be symmetric, so that the area that is removed will be much thinner. Because of this, it is more likely that longer, thinner stones will result.
-
