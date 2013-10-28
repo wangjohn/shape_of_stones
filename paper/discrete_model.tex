@@ -50,7 +50,7 @@ The chipping process model allows us to simulate changes to a stone. A stone whi
 
 To examine the accuracy of our model, we performed computer simulations using the Python programming language and the Shapely library. With computer simulations, we were able to create multiple instances of a chipping process and analyze the shapes of the resulting stones. We were also able to use multiple probability distributions $\mathrm{P}$ and areas $A$ to generate different chipping processes.
 
-\begin{figure}[H]
+\begin{figure}
   \begin{center}
     \includegraphics[width=4in]{area_chipper_sample.pdf}
   \end{center}
@@ -66,7 +66,7 @@ Figure \ref{fig:area_chipper_sample} displays the typical results of the chippin
 
 To examine the chipping process more closely, we can look at how circular or elliptical the resulting shapes are. One would expect rocks in a stream or riverbed to be elliptical in shape. We can therefore examine the distance of each vertex from the centroid of the stone. In a circle, all of the distances would be the same. In an elipse, one would expect to have an even number of points which are close and far away.
 
-\begin{figure}[H]
+\begin{figure}
   \begin{center}
     \includegraphics[width=4in]{distance_from_centroid.pdf}
   \end{center}
@@ -78,7 +78,7 @@ Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distanc
 
 Choosing a different distribution for $\mathrm{P}$ yields dramatically different results. For example, if we choose $\mathrm{P} = \mathrm{N}(0.05, 0.15)$, we obtain the distribution shown in figure \ref{fig:distance_from_centroid_skewed}.
 
-\begin{figure}[H]
+\begin{figure}
   \begin{center}
     \includegraphics[width=4in]{distance_from_centroid_skewed.pdf}
   \end{center}
