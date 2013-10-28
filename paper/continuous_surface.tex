@@ -120,7 +120,7 @@ Looking closely, it can be seen that areas of high curvature form when evaluatio
 
 The most obvious way to fix this problem would be to redistribute the points evenly on the surface at every step. This wouldn't be too difficult of a task, since we can easily integrate and interpolate with the FFT and find a new set of evaluation points, $\bvec{x}$ that are evenly spaced on the surface. 
 
-Unfortunately, if we arbitrarily move points around, we lose spectral accuracy, because our new points will be sampled at different parameter values $\tilde{s} \ne s$, but the Discrete Fourier transform assumes that the points are sampled at $s$. This parameter transformation is okay if there exists some smooth (ideally analytic) function, $h(s)$, such that $h(s) = \tilse{s}$. This technique of parameter transformation is utilized extensively in spectral methods involving Chebyshev polynomials which use $h(s) = \cos(s)$ to cluster evaluation points near both endpoints of the domain.
+Unfortunately, if we arbitrarily move points around, we lose spectral accuracy, because our new points will be sampled at different parameter values $\tilde{s} \ne s$, but the Discrete Fourier transform assumes that the points are sampled at $s$. This parameter transformation is okay if there exists some smooth (ideally analytic) function, $h(s)$, such that $h(s) = \tilde{s}$. This technique of parameter transformation is utilized extensively in spectral methods involving Chebyshev polynomials which use $h(s) = \cos(s)$ to cluster evaluation points near both endpoints of the domain.
 
 Redistributing points in such a way to ensure that $h(s)$ exists is difficult though, so we will first describe some different methods we attempted at eliminating the surface folding.
 
@@ -144,7 +144,7 @@ This problem led us to attempt to artificially dampen the high frequencies in $\
 
 \subsection*{Continuous Redistribution}
 
-To redistribute points, such that there exists some function $h(s)$ as described above we decided to model our redistribution by adding a term to Equation \ref{eq:erosion-diff-eq}, which is shown below. This works out nicely, because now the redistribution is smooth, so $h(s)$ must exist, as long as Equation \ref{eq:erosion-diff-eq2} has a solution.
+To redistribute points, such that there exists some function $h(s)$ as described above we decided to model our redistribution by adding a term to Equation \ref{eq:erosion-diff-eq}, which is shown below. This works out nicely, because now the redistribution is smooth, so $h(s)$ must exist, as long as Equation \ref{eq:erosion-diff-eq-2} has a solution.
 
 \begin{align}
   \label{eq:erosion-diff-eq-2}
