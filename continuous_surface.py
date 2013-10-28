@@ -17,14 +17,14 @@ from mpltools import style
 style.use('ggplot')
 
 figure(figsize=(5, 4))
-plot_name = "remove_lowest_blob_bad_zoom"
+plot_name = "remove_lowest_blob_bad_points_zoom"
 filename = "/home/jonathan/Dropbox/Documents/Coursework/Project Lab in Mathematics/shape_of_stones/continuous_surface/figures/{}.pdf".format(plot_name)
 
 # -----------------------------------------------------------------------------
 
 SHOW_X = False
 SHOW_LINE = True
-SHOW_POINTS = True
+SHOW_POINTS = False
 RESOLUTION_FACTOR = 2**(0)
 PLOT_NPTS_FACTOR = 1E1
 T = 0.2
@@ -240,6 +240,7 @@ def run_simulation(shape, t_steps, method):
     x_hat_simulation = x_hat_simulation.reshape(len(t_steps), -1, 4)
 
     for i in arange(N_STEPS, step=int(N_STEPS/4)):
+
         shape.x_hat = real_to_complex(x_hat_simulation[i])
         shape.plot("t = {:.2f}".format(t_steps[i]))
     legend()

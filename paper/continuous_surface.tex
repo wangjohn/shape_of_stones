@@ -35,33 +35,9 @@ Our second process is an object sitting in a bath of acid, which we will call ou
 
 For our model we chose parameters, $\alpha = 10, \; \beta = \gamma = 0.1$.
 
-\subsection*{Surface Equations}
-
-Our surface is modeled with two vectors, $x_1, x_2 \in \R^N$ for some resolution $N$. Then $\bvec{x} \coloneqq \bracket{x_1^T, x_2^T}$, with $x_1$ and $x_2$ being the two coordinates of points sampled counterclockwise along the surface.
-
-\begin{align}
-  \dot{\bvec{x}}& \coloneqq \frac{d\bvec{x}}{dt} \tag{Velocity}\\
-  \ddot{\bvec{x}}& \coloneqq \frac{d^2\bvec{x}}{dt^2} \tag{Acceleration}\\
-  \kappa& = \frac{\dot{\bvec{x}} \times \ddot{\bvec{x}}}{\dot{x}^3} \tag{Curvature}
-\end{align}
-
-\subsection*{Numerical Modeling}
-
-We chose to model the surface parametrically with a Discrete Fourier series using spectral methods. Our processes tend to smooth the surfaces out over time, so spectral methods would capture this much better than a local approximation of the surface using finite differences which only act locally at points. All of our surface are in $\R^2$, so we will use the Real Fast Fourier Transform (equations in the appendix).
-
-\begin{align}
-  \dot{\bvec{x}}& = RFFT^{-1}\paren{diag(ik) \; RFFT(\bvec{x})}\\
-  \ddot{\bvec{x}}& = RFFT^{-1}\paren{diag(-k^2) \; RFFT(\bvec{x})}\\
-\end{align}
-
-\begin{align}
-  \bhat{n} = [-\dot{x}_2, \dot{x}_1]\\
-  k& = \frac{\dot{a} \ddot{b} - \dot{b} \ddot{a}}{\paren{a^2 + b^2}^{3/2}}
-\end{align}
-
 \subsection*{Example Surface}
 
-The example shape that we will use throughout this section is shown in Figure \ref{fig:blob-shape}.
+The example shape that we will use is shown in Figure \ref{fig:blob-shape}.
 
 \begin{figure}[H]
     \begin{center}
@@ -78,36 +54,58 @@ The equations for the shape are the following ($T_i$ is the i\textsuperscript{th
   x_2(s) = \sin(s) \paren{2 T_0(\paren{\frac{s-\pi}{\pi}}) + T_4(\paren{\frac{s-\pi}{\pi}})}
 \end{align*}
 
+\subsection*{Surface Equations}
+
+Our surface is modeled with two vectors, $x_1, x_2 \in \R^N$ for some resolution $N$. Then $\bvec{x} \coloneqq \bracket{x_1^T, x_2^T}$, with $x_1$ and $x_2$ being the two coordinates of points sampled counterclockwise along the surface.
+
+\begin{align}
+  \dot{\bvec{x}}& \coloneqq \frac{d\bvec{x}}{dt} \tag{Velocity}\\
+  \ddot{\bvec{x}}& \coloneqq \frac{d^2\bvec{x}}{dt^2} \tag{Acceleration}\\
+  \kappa& = \frac{\dot{\bvec{x}} \times \ddot{\bvec{x}}}{\dot{x}^3} \tag{Curvature}
+\end{align}
+
+\subsection*{Numerical Modeling}
+
+We chose to model the surface parametrically with a Discrete Fourier series using spectral methods. Our processes tend to smooth the surfaces out over time, so spectral methods would capture this much better than a local approximation of the surface using finite differences which only act locally at points. All of our surface are in $\R^2$, so we will use the Real Fast Fourier Transform (equations in the appendix). The following equations are derived in most introductory spectral method texts, so they will be stated without proof here
+
+\begin{align}
+  \dot{\bvec{x}}& = RFFT^{-1}\paren{diag(i \, [0:N/2, 0]) \; RFFT(\bvec{x})}\\
+  \ddot{\bvec{x}}& = RFFT^{-1}\paren{diag(i^2 [0:N/2, 0]^2) \; RFFT(\bvec{x})}
+\end{align}
+
+Note: $diag(\bvec{a})$ is the diagonal matrix with the elements of $\bvec{a}$ along the diagonal.
+
+Using the FFT, the surface normal and curvature can now be easily found
+
+\begin{align}
+  \bhat{n}& = [-\dot{x}_2, \dot{x}_1]\\
+  k& = \frac{\dot{x}_1 \ddot{x}_2 - \dot{x}_2 \ddot{x}_1}{\paren{x_1^2 + x_2^2}^{3/2}}
+\end{align}
+
 \subsection*{Point Collision Problems}
 
-Unfortunately, the simplicity of modeling the surface with Fourier series breaks down when the surface starts to shrink. As can be seen in Figure \ref{fig:remove-lowest-blob-bad}, the process works well for a short time period, but sharp points start to form as time increases.
+Unfortunately, the simplicity gained from modeling the surface with Fourier series is lost when the surface starts to shrink. As can be seen in Figure \ref{fig:remove-lowest-blob-bad}, the process works well for a short time period, but over time a sharp point, and the surface actually folds over itself (a physical impossibility).
 
+
+\begin{figure}[H]
+    \begin{center}
+      \includegraphics[keepaspectratio]{remove_lowest_blob_bad.pdf}
+    \end{center}
+  \vspace{-.2in} % corrects bad spacing
+  \caption{\label{fig:remove-lowest-blob-bad}}
+\end{figure}
+
+To see why this occurs, we will show a zoomed in portion of the same figure, but with the evaluation points shown. 
 
 \begin{figure}[H]
     \begin{center}
       \includegraphics[keepaspectratio]{remove_lowest_blob_bad_zoom.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
-  \caption{\label{fig:remove-lowest-blob-bad}}
+  \caption{\label{fig:remove-lowest-blog-bad-zoom}}
 \end{figure}
 
-To see why this occurs, we will show the same figure, but with the evaluation points shown. Looking closely, it can be seen that the sharp corners form when evaluation points get too close to each other. Our guess is that this occurs because we are using discrete time stepping, so the shape's change with time is only an approximation. This is fine when the evaluation points are far from each other, but when they get close to each other, the errors become significant and affect the direction of the surface unit normal vectors. Rather  
-
-\begin{figure}[H]
-    \begin{center}
-      \includegraphics[keepaspectratio]{remove_lowest_blob_bad_points.pdf}
-    \end{center}
-  \vspace{-.2in} % corrects bad spacing
-  \caption{\label{fig:remove-lowest-blog-bad-points}}
-\end{figure}
-
-\begin{figure}[H]
-    \begin{center}
-      \includegraphics[keepaspectratio]{remove_lowest_blob_bad_x.pdf}
-    \end{center}
-  \vspace{-.2in} % corrects bad spacing
-  \caption{\label{fig:remove-lowest-blob-bad-x}}
-\end{figure}
+Looking closely, it can be seen that the sharp corner forms when evaluation points get too close to each other. Our guess is that this occurs because we are using discrete time stepping, so there are errors in the approximation of the shape's change with time. This is fine when the evaluation points are far from each other, but when they get close to each other, the errors become significant and affect the direction of the surface unit normal vectors. 
 
 \subsection*{Redistributing Points}
 
@@ -117,14 +115,25 @@ Unfortunately, if we arbitrarily move points around, we lose spectral accuracy. 
 
 \subsection*{High Frequency Damping}
 
+Our first approach to improve the algorithm was to use fewer Fourier terms than evaluation points, in an attempt to better approximate the shape while ignoring the higher frequencies. This unfortunately performed even worse than our original algorithm.
 
 \subsection*{Partial High Frequency Damping}
 
-In the \textit{erode lowest model}, 
+In the \textit{bottom recession model}, $x_1$ should be changing slowly and smoothly with time, since the recession model primarily moves points upwards. In Figure \ref{fig:remove-lowest-blob-bad-x}, $x_1$ is plotted, and we can see that this is not the case in our simple algorithm and large high frequency oscillations appear as time increases. 
+
+\begin{figure}[H]
+    \begin{center}
+      \includegraphics[keepaspectratio]{remove_lowest_blob_bad_x.pdf}
+    \end{center}
+  \vspace{-.2in} % corrects bad spacing
+  \caption{\label{fig:remove-lowest-blob-bad-x}}
+\end{figure}
+
+This led us to try to artificially dampen the high frequencies in $x_1$, by manually zeroing out the high frequency Fourier coefficients. This worked reasonably well, but was not a very robust method. Our shape is nice, because $x_1$ can be represented accurately with very few Fourier terms, but this would not be the case for more complicated shapes and other models, such as the \textit{smoothing model} that affects $x_1$ and $x_2$ equally. 
 
 \subsection*{Continuous Redistribution}
 
-To redistribute points, we need to find some smooth function $f(s)$ that will map our evenly distributed $theta$. This can be achieved by 
+To redistribute points, we need to find some smooth function that will map points spaced evenly on the surface to evenly distributed $theta$. This can be achieved by 
 
 \begin{align}
   \frac{d\bvec{x}}{dt}& = g(x) \; \bhat{n} + f(\bvec{a}_t)\\
