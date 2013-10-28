@@ -10,12 +10,24 @@ from scipy import integrate
 from scipy import interpolate
 from numpy.polynomial import chebyshev
 
+from matplotlib import rc
+rc("text", usetex=True)
+
+from mpltools import style
+style.use('ggplot')
+
+figure(figsize=(5, 4))
+plot_name = "remove_lowest_blob_good"
+filename = "/home/jonathan/Dropbox/Documents/Coursework/Project Lab in Mathematics/shape_of_stones/continuous_surface/figures/{}.pdf".format(plot_name)
 
 # -----------------------------------------------------------------------------
 
-RESOLUTION_FACTOR = 2**(1)
+SHOW_X = False
+SHOW_LINE = True
+SHOW_POINTS = False
+RESOLUTION_FACTOR = 2**(0)
 PLOT_NPTS_FACTOR = 1E1
-T = 0.1
+T = 0.2
 N_STEPS = T/1E-2
 N_PTS = 20
 H_MIN = 0.2
@@ -71,7 +83,6 @@ def ellipse_circumference(a, b):
         m *= 2 
         s += m * (x - y)**2
     return pi * ((a + b)**2 - s) / (x + y)
-
 
 def frobenius_norm(x):
     return sqrt(sum(x**2, axis=-1))
@@ -162,6 +173,7 @@ class SpectralShape(object):
     @x_hat.setter
     def x_hat(self, value):
         self._x_hat = value.copy()
+        # self._x_hat[4:,0] = 0
 
     def surface_normal(self):
         x_dot = get_values(spectral_derivative(self.x_hat, n=1))
@@ -179,18 +191,34 @@ class SpectralShape(object):
 
     def dxdt(self, method):
         dx_hatdt = get_spectral(method(self)[:,newaxis] * self.surface_normal())
+        
+        # x_dot = get_values(spectral_derivative(self.x_hat, n=1))
+        # v = frobenius_norm(x_dot)
+        # x_ddot = get_values(spectral_derivative(self.x_hat, n=2))
+        
+        # a_t = x_dot / v[:,newaxis]
+        # a_t *= sum(x_ddot * x_dot, axis=1)[:,newaxis] / 5
+
+        # dx_hatdt += get_spectral(a_t)*5
+
         return dx_hatdt[:len(self._x_hat)]
 
-    def plot(self):
+    def plot(self, label=None):
         n_pts = len(self) * PLOT_NPTS_FACTOR
         s_fine = linspace(0, 2*pi, n_pts, endpoint=False)
         
         x_fine = get_values(increase_spectral_points(self._x_hat, PLOT_NPTS_FACTOR))
 
-        plot(x_fine[:,0], x_fine[:,1])
-        # plot(self.x[:,0], self.x[:,1], 'x')
-        axis('equal')
+        if SHOW_X:
+            plot_spectral(self._x_hat[:,0])
 
+        if SHOW_LINE:
+            plot(x_fine[:,0], x_fine[:,1], label=label)
+        
+        if SHOW_POINTS:
+            plot(self.x[:,0], self.x[:,1], 'x')
+
+        axis('equal')
 
 # -----------------------------------------------------------------------------
 
@@ -214,10 +242,12 @@ def run_simulation(shape, t_steps, method):
     for i in arange(N_STEPS, step=int(N_STEPS/4)):
     # for i in arange(6):
         shape.x_hat = real_to_complex(x_hat_simulation[i])
-        shape.plot()
+        shape.plot("t = {:.2f}".format(t_steps[i]))
         # plot(linspace(0, 2*pi, N_PTS, endpoint=False), shape.x[:,0], 'o')
         # plot_spectral(shape.x_hat[:,0])
 
+    legend()
+    savefig(filename)
     show()
 
 
@@ -227,12 +257,3 @@ shape = {"circle":circle, "ellipse": ellipse, "blob": blob}[SHAPE](s)
 t = linspace(0, T, N_STEPS)
 
 run_simulation(shape, t, method)
-
-# x = sin(s)
-# plot(s, x)
-
-# x_hat = increase_spectral_points(get_spectral(x), factor=2)
-# s_fine = linspace(0, 2*pi, N_PTS*2, endpoint=False)
-# x_fine = get_values(x_hat)
-# plot(s_fine, x_fine)
-# show()
