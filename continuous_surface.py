@@ -17,7 +17,7 @@ from mpltools import style
 style.use('ggplot')
 
 figure(figsize=(5, 4))
-plot_name = "remove_lowest_blob_good"
+plot_name = "remove_lowest_blob_bad_points_zoom"
 filename = "/home/jonathan/Dropbox/Documents/Coursework/Project Lab in Mathematics/shape_of_stones/continuous_surface/figures/{}.pdf".format(plot_name)
 
 # -----------------------------------------------------------------------------
@@ -240,12 +240,9 @@ def run_simulation(shape, t_steps, method):
     x_hat_simulation = x_hat_simulation.reshape(len(t_steps), -1, 4)
 
     for i in arange(N_STEPS, step=int(N_STEPS/4)):
-    # for i in arange(6):
+
         shape.x_hat = real_to_complex(x_hat_simulation[i])
         shape.plot("t = {:.2f}".format(t_steps[i]))
-        # plot(linspace(0, 2*pi, N_PTS, endpoint=False), shape.x[:,0], 'o')
-        # plot_spectral(shape.x_hat[:,0])
-
     legend()
     savefig(filename)
     show()
