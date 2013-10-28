@@ -1,0 +1,46 @@
+In this section, we shall describe a model for simulating the erosion of a stone. In particular, we think of the erosion of a stone as coming from shear forces. This discrete model for eroding the stone allows us to simulate random processes and view the shape of a stone after some number of time steps. We provide computer simulations for the erosion process and analyze the model through these simulations.
+
+\subsection{Shearing A Stone}
+
+The discrete model for stone erosion is based on the idea that stones are eroded via chipping. The process of chipping is analogous to dropping a stone from a specified height and applying a shear force to a particular point on the stone. Intuitively, one can think of a stone in a stream being eroded by being tossed and turned by the force of the river. This tossing and turning causes the stone to collide with other stones on the bottom of the riverbed, causing chipping to occur.
+
+We model the interaction between two stones as a shear force - a force that causes two parts of a stone to move in opposite directions. The point where a stone collides with another stone is the point where the shear force is concentrated. This causes the stone to break into two pieces. In mechanics, the shear stress $\tau$ applied to the stone is given by the following equation:
+
+\begin{eqnarray}
+  \tau = \frac{F}{A}
+\end{eqnarray}
+
+Where $F$ is the force applied and $A$ is the cross-sectional area of material with area parallel to the applied force vector. If the shear stress $\tau$ is above the stress that the stone's material can withstand, then the stone will crack.
+
+Notice that the stress is proportional to the cross-sectional area of meterial which is parallel to the force vector. Thus, we can see that if the amount of force applied is constant, the total area of the material that will be sheared if shearing occurs will be constant as well.
+
+\subsection{Definitions}
+
+This section will define how we represent a stone in the discrete model.
+
+We will represent a stone as a polygon with $n$ vertices. Formally, a polygon $s$ can be defined as the set of vertices $s = \{ \bvec{v}_1, \ldots, \bvec{v}_n \}$, where a vertex $\bvec{v}_i = (x_i, y_i)$ is a tuple in $\mathrm{R}^2$. In a polygon $s$, vertices $\bvec{v}_i$ and $\bvec{v}_{i+1}$ are connected by a line segment for $i \in \{1,2, \ldots, n-1\}$. In addition, vertices $\bvec{v}_{n}$ and $\bvec{v}_1$ are also connected by a line segment.
+
+The centroid $\bvec{c}_s$ of a stone $s$ is the center of mass of the stone when the stone has uniform density. In other words, the centroid is the point $\bvec{c}_s \in \mathrm{R}^2$ where the following holds:
+
+\begin{eqnarray}
+ \int_A (\bvec{r} - \bvec{c}_s) dA = 0
+\end{eqnarray}
+
+Where $A$ is the area of the stone.
+
+\subsection{The Model}
+
+With this in mind, we shall now develop a model for the erosion of a stone based on shearing. The main idea of the model is that we will represent a stone as a two-dimensional polygon, and chip off a constant amount of area of the stone at every time step. In this way, we will attempt to capture the process of a stone colliding with another stone on a riverbed. Randomness will be introduced into the model by randomly selecting somewhere on the stone to start the shearing.
+
+A chipping process for a probability distribution $\mathrm{P}$ and area $A$, called $Chip(\mathrm{P}, A)$, is represented as follows:
+
+\begin{enumerate}
+  \item Select a vertex $\bvec{v}_j$. To select this vertex, we find the centroid $\bvec{c}_s$ of stone $s$ and choose an angle $\gamma \in [0, 2\pi)$ uniformly at random. Now, define the ray $\bvec{l}$ as the ray with an initial point of $\bvec{c}_s$ which extends outwards infinitely at an angle of $\gamma$ from the horizontal. The vertex with the minimum perpendicular distance to $\bvec{l}$ will be $\bvec{v}_j$.
+  \item Given vertex $\bvec{v}_j$, define $\bvec{l}_1$ as the line segment which connects $\bvec{v}_j$ and $\bvec{v}_{{j-1} \pmod{n}}$. Similarly, define $\bvec{l}_2$ as the line segment connecting $\bvec{v}_j$ and $\bvec{v}_{{j+1} \pmod{n}}$.
+  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \in [0,1]$ such that $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v|_{{j-1} \pmod{n}}$. The distribution of $t$ is defined by the probability distribution $\mathrm{P}$ so that $t \sim \mathrm{P}$.
+  \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1} \pmod{n}}$.
+\end{enumerate}
+
+\begin{definition}
+
+\end{definition}
