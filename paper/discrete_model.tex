@@ -32,7 +32,7 @@ Where $A$ is the area of the stone.
 
 With this in mind, we shall now develop a model for the erosion of a stone based on shearing. The main idea of the model is that we will represent a stone as a two-dimensional polygon, and chip off a constant amount of area of the stone at every time step. In this way, we will attempt to capture the process of a stone colliding with another stone on a riverbed. Randomness will be introduced into the model by randomly selecting somewhere on the stone to start the shearing.
 
-A chip for a probability distribution $\mathrm{P}$, stone $s$, and area $A$ is denoted $Chip(\mathrm{P}, A, s)$ and is represented as follows:
+We shall now give a formal definition of the chipping process. A chip for a probability distribution $\mathrm{P}$, stone $s$, and area $A$ is denoted $Chip(\mathrm{P}, A, s)$ and is represented as follows:
 
 \begin{enumerate}
   \item Select a vertex $\bvec{v}_j$ from $s$. To select this vertex, we find the centroid $\bvec{c}_s$ of stone $s$ and choose an angle $\gamma \in [0, 2\pi)$ uniformly at random. Now, define the ray $\bvec{l}$ as the ray with an initial point of $\bvec{c}_s$ which extends outwards infinitely at an angle of $\gamma$ from the horizontal. The vertex with the minimum perpendicular distance to $\bvec{l}$ will be $\bvec{v}_j$.
@@ -43,3 +43,13 @@ A chip for a probability distribution $\mathrm{P}$, stone $s$, and area $A$ is d
 \end{enumerate}
 
 A chipping process for a probability distribution $\mathrm{P}$, stone $s$, area $A$, and iterations $k$ is denoted $ChipProcess(\mathrm{P}, A, s, k)$. A chipping process returns a stone $s'$ which has iteratively been through $k$ chips. Thus, a chipping process takes a stone $s$ and creates $s_1 = Chip(\mathrm{P}, A, s)$, $s_2 = Chip(\mathrm{P}, A, s_1)$, \ldots, $s_k = Chip(\mathrm{P}, A, s_{k-1})$, and returns $s' = s_k$.
+
+\subsection{Simulations}
+
+The chipping process model allows us to simulate changes to a stone. A stone which undergoes a chipping process should have a shape which is close to the stones which undergo erosion and chipping in the real world (if our chipping process model is an accurate description of erosion).
+
+To examine the accuracy of our model, we performed computer simulations using the Python programming language and the Shapely library. With computer simulations, we were able to create multiple instances of a chipping process and analyze the shapes of the resulting stones. We were also able to use multiple probability distributions $\mathrm{P}$ and areas $A$ to generate different chipping processes.
+
+
+
+
