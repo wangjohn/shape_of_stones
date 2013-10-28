@@ -73,8 +73,7 @@ To examine the chipping process more closely, we can look at how circular or ell
   \begin{center}
     \includegraphics[width=4in]{distance_from_centroid.pdf}
   \end{center}
-  \label{fig:distance_from_centroid}
-  \caption{Histogram of Vertex Distance From Centroid}
+  \caption{Histogram of Vertex Distance From Centroid \label{fig:distance_from_centroid}}
 \end{figure}
 
 Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. One can see that the distribution looks fairly normal, with a mean of a distance of 0.472. The distribution of vertex distances from the centroid show that the shapes that result from this set of chipping process conditions are neither elliptical nor spherical. However, a probability distribution $\mathrm{P} = \mathrm{N}(0.5, 0.15)$ tends to create a distribution of vertex distances from the centroid which are normal.
@@ -85,8 +84,7 @@ Choosing a different distribution for $\mathrm{P}$ yields dramatically different
   \begin{center}
     \includegraphics[width=4in]{distance_from_centroid_skewed.pdf}
   \end{center}
-  \label{fig:distance_from_centroid_skewed}
-  \caption{Histogram of Vertex Distance From Centroid for $\mathrm{P} = \mathrm{N}(0.05, 0.15)$}
+  \caption{Histogram of Vertex Distance From Centroid for $\mathrm{P} = \mathrm{N}(0.05, 0.15)$ \label{fig:distance_from_centroid_skewed}}
 \end{figure}
 
 One can see that the distribution of vertex distances from the centroid are skewed so that there are far more vertices which are further away from the centroid. The resulting stones are much flatter than the stones shown in figure \ref{fig:area_chipper_sample}. The intuitive explanation for this is that there is a much higher probability that the shear will not be symmetric, so that the area that is removed will be much thinner. Because of this, it is more likely that longer, thinner stones will result.
