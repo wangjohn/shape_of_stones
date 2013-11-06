@@ -1,18 +1,10 @@
-In this section, we shall describe a model for simulating the erosion of a stone. In particular, we think of the erosion of a stone as coming from shear forces. This discrete model for eroding the stone allows us to simulate random processes and view the shape of a stone after some number of time steps. We provide computer simulations for the erosion process and analyze the model through these simulations.
+In this section, we shall describe a model for simulating the chipping of a stone. In particular, we think of the erosion of a stone as coming from shear forces. This discrete model for eroding the stone allows us to simulate random processes and view the shape of a stone after some number of time steps. We provide computer simulations for the erosion process and analyze the model through these simulations.
 
 \subsection{Shearing Stones}
 
 The discrete model for stone erosion is based on the idea that stones are eroded via chipping. The process of chipping is analogous to dropping a stone from a specified height and applying a shear force to a particular point on the stone. Intuitively, one can think of a stone in a stream being eroded by being tossed and turned by the force of the river. This tossing and turning causes the stone to collide with other stones on the bottom of the riverbed, causing chipping to occur.
 
-We model the interaction between two stones as a shear force - a force that causes two parts of a stone to move in opposite directions. The point where a stone collides with another stone is the point where the shear force is concentrated. This causes the stone to break into two pieces. In mechanics, the shear stress $\tau$ applied to the stone is given by the following equation:
-
-\begin{eqnarray}
-  \tau = \frac{F}{A}
-\end{eqnarray}
-
-Where $F$ is the force applied and $A$ is the cross-sectional area of material with area parallel to the applied force vector. If the shear stress $\tau$ is above the stress that the stone's material can withstand, then the stone will crack.
-
-Notice that the stress is proportional to the cross-sectional area of meterial which is parallel to the force vector. Thus, we can see that if the amount of force applied is constant, the total area of the material that will be sheared if shearing occurs will be constant as well.
+We model the interaction between two stones as a shear force, a force that causes two parts of a stone to move in opposite directions. The point where a stone collides with another stone is the point where the shear force is concentrated. This causes the stone to break into two pieces. The processes by which shear forces cause breakages in materials are extremely complicated, so we will use the following simple assumption: we shall assume that the amount of area that is sheared off of a stone is proportional to the amount of force incident on the stone.
 
 \subsection{Definitions}
 
