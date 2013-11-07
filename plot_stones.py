@@ -71,6 +71,9 @@ def plot_histogram(vertex_chipper, iterations = 50, chips = 50):
         distances = vertex_chipper.stone.distances_from_centroid()
         histogram.extend(distances)
 
+    graph_histogram(histogram)
+
+def graph_histogram(histogram):
     print float(sum(histogram)) / len(histogram)
     ax = pyplot.axes()
     hist = numpy.histogram(histogram, [i*0.05 for i in xrange(18)])
@@ -81,8 +84,20 @@ def plot_histogram(vertex_chipper, iterations = 50, chips = 50):
     pyplot.bar(pos, hist[0], 1.0, color='r')
     pyplot.show()
 
+def plot_ellipse(a, b):
+    histogram = []
+    num_steps = 20
+    for i in xrange(num_steps):
+        x = -math.sqrt(a) + 2 * math.sqrt(a) * (float(i) / num_steps)
+        y = math.sqrt(float(b) - (float(b) / float(a))*(x**2))
+        distance = (x**2.0 + y**2.0)
+        histogram.append(distance)
+
+    graph_histogram(histogram)
+
 if __name__ == '__main__':
     #plot_single(vertex_chipper, 50)
     #plot_histogram(vertex_chipper)
-    plot_many(vertex_chipper, 50)
+    #plot_many(vertex_chipper, 50)
+    plot_ellipse(2, 5)
 
