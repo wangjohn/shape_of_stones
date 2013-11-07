@@ -263,9 +263,15 @@ class Stone:
     def __init__(self, polygon):
         self.polygon = polygon
 
-    def distances_from_centroid(self):
+    def distances_from_centroid(self, num_intervals):
         center = geometry.Point(self.polygon.centroid)
         distances = []
-        for coord in self.polygon.exterior.coords:
-            distances.append(center.distance(geometry.Point(coord)))
+        for i in xrange(num_intervals):
+            xcoord = (float(i) / num_intervals)
+            line = geometry.LineString([(xcoord, 0), (xcoord, 1)])
+
+            intersect = geometry.intersection(line)
+            for coord in intersect.coords:
+                distances.append(center.distance(geometry.Point(coord)))
+
         return distances
