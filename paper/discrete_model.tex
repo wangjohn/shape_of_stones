@@ -4,33 +4,50 @@ In this section, we shall describe a model for simulating the chipping of a ston
 
 The discrete model for stone erosion is based on the idea that stones are eroded via chipping. The process of chipping is analogous to dropping a stone from a specified height and applying a shear force to a particular point on the stone. Intuitively, one can think of a stone in a stream being eroded by being tossed and turned by the force of the river. This tossing and turning causes the stone to collide with other stones on the bottom of the riverbed, causing chipping to occur.
 
-We model the interaction between two stones as a shear force, a force that causes two parts of a stone to move in opposite directions. The point where a stone collides with another stone is the point where the shear force is concentrated. This causes the stone to break into two pieces. The processes by which shear forces cause breakages in materials are extremely complicated, so we will use the following simple assumption: we shall assume that the amount of area that is sheared off of a stone is proportional to the amount of force incident on the stone.
+We model the interaction between two stones as a shear force, a force that causes two parts of a stone to move in opposite directions. The point where a stone collides with another stone is the point where the shear force is concentrated. This causes the stone to break into two pieces. The processes by which shear forces cause breakages in materials are extremely complicated, so we will use the following simple assumption: we shall assume that the amount of volume that is sheared off of a stone is proportional to the amount of force incident on the stone.
 
 \subsection{Definitions}
 
-This section will define how we represent a stone in the discrete model.
+This section will define how we represent a stone in the discrete model. We will represent a stone as a polygon in $k$-dimensional space with $n$ vertices.
 
-We will represent a stone as a polygon with $n$ vertices. Formally, a polygon $s$ can be defined as the set of vertices $s = \{ \bvec{v}_1, \ldots, \bvec{v}_n \}$, where a vertex $\bvec{v}_i = (x_i, y_i)$ is a tuple in $\mathrm{R}^2$. In a polygon $s$, vertices $\bvec{v}_i$ and $\bvec{v}_{i+1}$ are connected by a line segment for $i \in \{1,2, \ldots, n-1\}$. In addition, vertices $\bvec{v}_{n}$ and $\bvec{v}_1$ are also connected by a line segment.
+\begin{definition}
+  A polygon $s$ consisting of $n$ vertices is defined by the set of vertices $s = \{ \bvec{v}_0, \ldots, \bvec{v}_{n-1} \}$ where each vertex $\bvec{v}_i \in \mathrm{R}^k$ is a tuple. Vertices $\bvec{v}_i$ and $\bvec{v}_{i+1}$ are connected by a line segment for all $i \in \{0, 1, \ldots, n \}$ and the line segments do not intersect each other, except at the vertices.
+\end{definition}
 
-The centroid $\bvec{c}_s$ of a stone $s$ is the center of mass of the stone when the stone has uniform density. In other words, the centroid is the point $\bvec{c}_s \in \mathrm{R}^2$ where the following holds:
+When referring to vertices, we will use the convention of taking vertex indices modulo $n$ for convenience. Hence $v_{i \mod{n}} \equiv v_i$. Note that this means that $v_{n} = v_{0}$ so that vertex $v_{n-1}$ has a line segment connecting it to $v_{0}$.
+
+The centroid $\bvec{c}_s$ of a stone $s$ is the center of mass of the stone when the stone has uniform density. In other words, the centroid is the point $\bvec{c}_s \in \mathrm{R}^k$ where the following holds:
 
 \begin{eqnarray}
- \int_A (\bvec{r} - \bvec{c}_s) dA = 0
+ \int_V (\bvec{r} - \bvec{c}_s) dV = 0
 \end{eqnarray}
 
-Where $A$ is the area of the stone.
+Where $V$ is the area of the stone, using all values $\bvec{r} \in V$.
+
+\begin{definition}
+  A pseudo-probability distribution $P$.
+\end{definition}
+
+We will also introduce the notion of a convex vertex, which will be useful when defining our chipping process.
+
+\begin{definition}
+  A convex vertex $\bvec{v}_c$ on a polygon $s$ consisting of $n$ vertices is a vertex $\bvec{v}_i$ which, when removed from the polygon $s$ to create a new polygon $s' = \{ \bvec{v}_0, \ldots, bvec{v}_{i-1}, \bvec{v}_{i+1}, \ldots, \bvec{v}_{n-1} \}$ has the property $V(s) \geq V(s')$ (where $V(\cdot)$ denotes the volume of a stone).
+\end{definition}
+
+In the following sections, we will assume that one cannot chip a vertex which is not convex. The reasoning relies on our intuition for how a stone chips. Non-convex vertices can be thought of as moving in towards the center of a stone, and chipping a stone can be thought of being caused by the stone crashing into the ground. It is impossible for a stone to be chipped on a vertex which is not convex if the stone is falling onto a flat surface (the protruding vertices surrounding the convex vertex will be chipped first). Therefore, we make the assumption that convex vertices are the only ones which can be chipped through our mechanism.
 
 \subsection{The Chipping Process Model}
 
-With this in mind, we shall now develop a model for the erosion of a stone based on shearing. The main idea of the model is that we will represent a stone as a two-dimensional polygon, and chip off a constant amount of area of the stone at every time step. In this way, we will attempt to capture the process of a stone colliding with another stone on a riverbed. Randomness will be introduced into the model by randomly selecting somewhere on the stone to start the shearing.
+With this in mind, we shall now develop a model for the chipping of a stone based on shearing. We will confine our work to $\mathrm{R}^2$. The main idea of the model is that we will represent a stone as a two-dimensional polygon, and chip off a constant amount of area of the stone at every time step. In this way, we will attempt to capture the process of a stone colliding with another stone on a riverbed. Randomness will be introduced into the model by randomly selecting somewhere on the stone to start the shearing.
 
 We shall now give a formal definition of the chipping process. A chip for a probability distribution $\mathrm{P}$, stone $s$, and area $A$ is denoted $Chip(\mathrm{P}, A, s)$ and is represented as follows:
 
 \begin{enumerate}
-  \item Select a vertex $\bvec{v}_j$ from $s$. To select this vertex, we find the centroid $\bvec{c}_s$ of stone $s$ and choose an angle $\gamma \in [0, 2\pi)$ uniformly at random. Now, define the ray $\bvec{l}$ as the ray with an initial point of $\bvec{c}_s$ which extends outwards infinitely at an angle of $\gamma$ from the horizontal. The vertex with the minimum perpendicular distance to $\bvec{l}$ will be $\bvec{v}_j$.
-  \item Given vertex $\bvec{v}_j$, define $\bvec{l}_1$ as the line segment which connects $\bvec{v}_j$ and $\bvec{v}_{{j-1} \pmod{n}}$. Similarly, define $\bvec{l}_2$ as the line segment connecting $\bvec{v}_j$ and $\bvec{v}_{{j+1} \pmod{n}}$.
-  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \in [0,1]$ such that $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1} \pmod{n}}$. The distribution of $t$ is defined by the probability distribution $\mathrm{P}$ so that $t \sim \mathrm{P}$.
-  \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1} \pmod{n}}$.
+  \item Select a vertex $\bvec{v}_j$ from $s$. To select this vertex, we find the centroid $\bvec{c}_s$ of stone $s$ and choose an angle $\gamma \in [0, 2\pi)$ uniformly at random. Now, define the ray $\bvec{l}$ as the ray with an initial point of $\bvec{c}_s$ which extends outwards infinitely at an angle of $\gamma$ from the horizontal. The vertex with the minimum perpendicular distance to $\bvec{l}$ will be $\bvec{v}_j$. Repeat this process as many times as necessary until we have selected a convex vertex.
+  \item Given vertex $\bvec{v}_j$, define $\bvec{l}_l$ as the line segment which connects $\bvec{v}_j$ and $\bvec{v}_{{j-1}}$. Similarly, define $\bvec{l}_r$ as the line segment connecting $\bvec{v}_j$ and $\bvec{v}_{{j+1}}$ (recall that our convention is to take the vertex indices modulo $n$).
+  \item Select $\bvec{l}_1$ from the set $\{ \bvec{l}_l, \bvec{l}_r \}$ uniformly at random (i.e. $Pr[\bvec{l}_1 = \bvec{l}_l] = Pr[\bvec{l}_1 = \bvec{l}_r]$). Call the line segment which was not selected $\bvec{l}_2$.
+  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \in [0,1]$ such that $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1}}$. The distribution of $t$ is defined by the probability distribution $\mathrm{P}$ so that $t \sim \mathrm{P}$.
+  \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1}}$.
   \item Create a new stone $s'$ whose vertices are given by
     \begin{eqnarray*}
       s' = \{ \bvec{v}_1, \ldots, \bvec{v}_{j-1}, \bvec{p}_1, \bvec{p}_2, \bvec{v}_{j+1}, \ldots, \bvec{v}_n \}
