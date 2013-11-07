@@ -1,43 +1,19 @@
-We next moved on to develop a continuous surface erosion model. The surface is still a shape in $\R^2$, but now it has bounded higher derivatives, rather than being piecewise linear. Physically this model would represents a surface being worn down, such as a bar of soap in water or ice melting. 
+%!TEX root = paper.tex
+
+We next moved on to develop a continuous erosion model that operates on smooth surfaces in contrast to our previous discrete one that operated on piecewise linear surfaces. Physically this new model represents a surface being worn down gradually, such as a bar of soap in water or an ice cube melting. 
 
 \subsection*{Continuous Erosion Processes}
 
-There are a wide range of different erosion processes, and most of them are far too complex for the scope of this paper. To create simpler models, all of our processes only erode (move) each point on the surface in a direction normal to the surface at the point. This very rarely happens in real life, because materials are non-homogeneous, processes are nonlinear and chaotic, etc., but it is a reasonable assumption to make for a simplified model.
+There are a wide range of different erosion processes, and most of them are far too complex for the scope of this paper. To generate simple simulations, we use key properties of the surface such as curvature and position as input variables to erosion functions.
 
-In contrast to modeling erosion as a discrete process, as was done in the previous section, we will now model it with the following differential equation
+We will start by introducing an explicit representation of a surface. This choice of using an explicit representation instead of an implicit one may seem odd to the reader, but we would like to stress that this was a conscious decision on our part because it paves the pay for the use of spectral methods to represent the surface, which we will discuss more in Section \ref{sec:numerical-modeling}. To represent the surface explicitly, we will introduce a parameter $s \in [0, 2\pi)$ that increases when moving counterclockwise around the surface. Now the surface can be represented by $\bvec{x}(s) = (x_1(s), x_2(s))$, for some functions $x_1(x), x_2(s)$. In contrast to modeling erosion as a discrete process, as was done in the previous section, we will now model it with the following differential equation
 
 \begin{equation}
 \label{eq:erosion-diff-eq}
-\frac{d\bvec{x}}{dt} = g(\bvec{x}) \; \bhat{n}(\bvec{x})
+\frac{d(\bvec{x}(s))}{dt} = g(s) \; \bhat{n}(s)
 \end{equation}
 
-for some function $g(\bhat{x})$ that depends on the erosion process. $\bhat{n}(\bvec{x})$ is the unit vector normal to the surface at $\bvec{x}$ and pointing inwards.
-
-The method used to represent the continuous surface, $\bvec{x}$ will be explained momentarily, but first we will take a moment to explain the various erosion processes that we will model in this section.
-
-\subsubsection*{Smoothing Process}
-
-One of the processes that we will look at is a soap bar being worn down by a person holding it in their hand, which we will call the \textit{Smoothing Process}. In this process, the corners of the surface will get worn down quickest, because they are the first parts of the surface to come into contact with the person's hand. Technically the furthest protruding bumps will be worn down quickest, but to simplify the problem, we consider every point of the surface to wear down at a rate proportional to the curvature at the point. We will use a signed curvature $\kappa$, so that a bump will have positive curvature, and an indentation will have negative curvature. $g(\bvec{x})$ for this model is the following
-
-\begin{equation}
-g(\kappa(\bvec{x})) = \tan^{-1}(\beta \, (\kappa(\bvec{x}) - \alpha)) + \frac{\pi}{2}
-\end{equation}
-
-For our model we chose parameters, $\alpha = 1, \; \beta = 5$.
-
-\subsubsection*{Bottom Recession Process}
-
-Our second process is an object sitting in a bath of acid, which we will call our \textit{Bottom Recession Process}. In this process, the lowest points (smallest values of $\bvec{x}_2$) on the surface will erode quickest. $g(\bvec{x})$ for this model is the following
-
-\begin{align}
-  f(\bvec{x})& = \frac{1}{\alpha \, (\bvec{x}_2 - x_{2, min}) + \beta} - \gamma\\
-  g(\bvec{x})& = \begin{cases}
-    f(\bvec{x}) \qquad &\text{for} \quad f(\bvec{x}) > 0\\
-    0 \qquad &\text{otherwise}
-  \end{cases}
-\end{align}
-
-For our model we chose parameters, $\alpha = 10, \; \beta = \gamma = 0.1$.
+for some function $g(\bvec{x}(s))$ that depends on the erosion process. $\bhat{n}(s)$ is the surface unit normal vector oriented inwards.
 
 \subsection*{Example Surface}
 
@@ -54,23 +30,67 @@ The example shape that we will use for modeling our continuous processes is show
 The equations for the shape are the following ($T_i$ is the i\textsuperscript{th} Chebyshev polynomial)
 
 \begin{align*}
-  \bvec{x}_1(s) = \cos(s) \paren{2 T_0(\paren{\frac{s-\pi}{\pi}}) + T_2\paren{\frac{s-\pi}{\pi}}}\\
-  \bvec{x}_2(s) = \sin(s) \paren{2 T_0(\paren{\frac{s-\pi}{\pi}}) + T_4(\paren{\frac{s-\pi}{\pi}})}
+  x_1(s) = \cos(s) \paren{2 T_0\paren{\frac{s-\pi}{\pi}} + T_2\paren{\frac{s-\pi}{\pi}}}\\
+  x_2(s) = \sin(s) \paren{2 T_0\paren{\frac{s-\pi}{\pi}} + T_4(\paren{\frac{s-\pi}{\pi}})}
 \end{align*}
+
+The method used to represent the shape numerically will be explained in Section \ref{sec:numerical-modeling}, but first we will take a moment to explain the various erosion processes that we will model in this section.
+
+\subsubsection*{Smoothing Process}
+
+One of the processes that we will look at is a soap bar being worn down by a person holding it in their hand, which we will call the \textit{Smoothing Process}. In this process, the corners of the surface will get worn down quickest, because they are the first parts of the surface to come into contact with the person's hand. Technically the furthest protruding bumps will be worn down quickest, but to simplify the problem, we consider every point of the surface to wear down at a rate proportional to the curvature at the point. We will use a signed curvature $\kappa$, so that a bump will have positive curvature, and an indentation will have negative curvature. $g(s)$ for this model is the following
+
+\begin{equation}
+g(\kappa(s)) = \tan^{-1}(\beta \, (\kappa(s) - \alpha)) + \frac{\pi}{2}
+\end{equation}
+
+For our simulations we chose $\alpha = 1, \; \beta = 5$ so that $g \le 3$ for the range of $\kappa$ along our trial surfaces ($\kappa \in [-2, 2]$). This restriction is not based on any physics of the problem, and was chosen purely for the aesthetic look of the resulting simulation.
+
+\begin{figure}[H]
+    \begin{center}
+      \includegraphics[keepaspectratio]{g_1.pdf}
+    \end{center}
+  \vspace{-.2in} % corrects bad spacing
+  \caption{\label{fig:g-1} Plot of $g(\kappa)$ for \textit{Smoothing Process}.}
+\end{figure}
+
+\subsubsection*{Bottom Recession Process}
+
+Our second process is an object sitting in a bath of acid, which we will call our \textit{Bottom Recession Process}. In this process, the lowest points (smallest values of $\bvec{x}_2$) on the surface will erode quickest. $g(\bvec{x})$ for this model is the following
+
+\begin{align}
+  f(\bvec{x})& = \frac{1}{\alpha \, (\bvec{x}_2 - x_{2, min}) + \beta} - \gamma\\
+  g(\bvec{x})& = \begin{cases}
+    f(\bvec{x}) \qquad &\text{for} \quad f(\bvec{x}) > 0\\
+    0 \qquad &\text{otherwise}
+  \end{cases}
+\end{align}
+
+For our simulations we chose $\alpha = 10, \; \beta = \gamma = 0.1$ so that $g \approx 1$ for $y \approx y_{min}$.
+
+\begin{figure}[H]
+    \begin{center}
+      \includegraphics[keepaspectratio]{g_1.pdf}
+    \end{center}
+  \vspace{-.2in} % corrects bad spacing
+  \caption{\label{fig:g-1} Plot of $g(\kappa)$ for \textit{Smoothing Process}.}
+\end{figure}
 
 \subsection*{Surface Equations}
 
-Our surface is modeled with two vectors, $\bvec{x}_1, \bvec{x}_2 \in \R^N$ for some resolution $N$. $\bvec{x} \coloneqq \bracket{\bvec{x}_1^T, \bvec{x}_2^T}$ is the vector of points measured counterclockwise around the surface, which we will call the evaluation points, since these are the points at which we will evaluate the rhs of Equation \ref{eq:erosion-diff-eq}.
+To represent our surface numerically, we generate a matrix of evaluation points which are taken at locations $\bvec{s} = 2 \pi [0, 1/N, \dotsc, (N-1)/N]^T$ for some resolution $N$. This matrix $\bvec{x} \coloneqq \bracket{\bvec{x}_1(s), \bvec{x}_2(s)}$ is $N x 2$ and at each step in our simulation, we will evaluate the rhs of Equation \ref{eq:erosion-diff-eq} at the evaluation points.
 
-\begin{align}
-  \dot{\bvec{x}}& \coloneqq \frac{d\bvec{x}}{dt} \tag{Velocity}\\
-  \ddot{\bvec{x}}& \coloneqq \frac{d^2\bvec{x}}{dt^2} \tag{Acceleration}\\
+To simplify our notation, we introduce the following vector calculus notation.
+
+\begin{align*}
+  \dot{\bvec{x}(s)}& \coloneqq \frac{d\bvec{x}}{ds}\\
+  \ddot{\bvec{x}(s)}& \coloneqq \frac{d^2\bvec{x}}{dt^2}\\
   \kappa& = \frac{\dot{\bvec{x}} \times \ddot{\bvec{x}}}{\dot{x}^3} \tag{Curvature}
-\end{align}
+\end{align*}
 
-\subsection*{Numerical Modeling}
+\subsection*{Numerical Modeling}\label{sec:numerical-modeling}
 
-We chose to model the surface parametrically with a Discrete Fourier series and use spectral methods for implementing Equation \ref{eq:erosion-diff-eq}. Our processes will keep the surface reasonably smooth as time progresses, so spectral methods will maintain the smoothness of the surface much better than a local approximation of the surface using finite differences which only acts locally at points. When we refer to smoothness, we are really referring to how many derivatives of the function are bounded, or in other words, how quickly the Fourier coefficients go to $0$. Since, the surface is in $\R^2$, we will use the Real Fast Fourier Transform ($\mathcal{RFFT}$), since it is slightly faster than the standard Fast Fourier Transform (equations for the $\mathcal{RFFT}$ can be found in the appendix). 
+We chose to model the surface parametrically with a Discrete Fourier series and use spectral methods for implementing Equation \ref{eq:erosion-diff-eq}. This is because spectral methods will maintain the smoothness of the surface much better than a local approximation of the surface using finite differences which only acts locally at points. When we refer to smoothness, we are really referring to how many derivatives of the function are bounded, or in other words, how quickly the Fourier coefficients go to $0$. Since, the surface is in $\R^2$, we will use the Real Fast Fourier Transform ($\mathcal{RFFT}$), since it is slightly faster than the standard Fast Fourier Transform (equations for the $\mathcal{RFFT}$ can be found in the appendix). 
 
 To model the surface parametrically, we define a parameter vector $\bvec{s} = 2 \, \pi \, n / N, \qquad \text{for} \quad n = 0, \dotsc, N-1$. Now we let $\bvec{s}$ be a counterclockwise sampling of the surface at locations $\bvec{s}$ ($\bvec{s}$ can be scaled by a constant factor if the surface is not of length $2\pi$).
 
@@ -123,24 +143,6 @@ The most obvious way to fix this problem would be to redistribute the points eve
 Unfortunately, if we arbitrarily move points around, we lose spectral accuracy, because our new points will be sampled at different parameter values $\tilde{s} \ne s$, but the Discrete Fourier transform assumes that the points are sampled at $s$. This parameter transformation is okay if there exists some smooth (ideally analytic) function, $h(s)$, such that $h(s) = \tilde{s}$. This technique of parameter transformation is utilized extensively in spectral methods involving Chebyshev polynomials which use $h(s) = \cos(s)$ to cluster evaluation points near both endpoints of the domain.
 
 Redistributing points in such a way to ensure that $h(s)$ exists is difficult though, so we will first describe some different methods we attempted at eliminating the surface folding.
-
-\subsection*{High Frequency Damping}
-
-Our first approach was to use fewer Fourier terms than the number of evaluation points, in an attempt to better approximate the shape while ignoring the higher frequencies. This unfortunately performed even worse than our original algorithm.
-
-\subsection*{Partial High Frequency Damping}
-
-In the \textit{Bottom Recession Process}, $\bvec{x}_1$ should be changing slowly and smoothly with time, since the recession model primarily affects $\bvec{x}_2$. In Figure \ref{fig:remove-lowest-blob-bad-x}, $\bvec{x}_1$ is plotted, and we can see that this is not the case in our simple algorithm and that large high frequency oscillations appear as we move forward in time. 
-
-\begin{figure}[H]
-    \begin{center}
-      \includegraphics[keepaspectratio]{remove_lowest_blob_bad_x.pdf}
-    \end{center}
-  \vspace{-.2in} % corrects bad spacing
-  \caption{\label{fig:remove-lowest-blob-bad-x}}
-\end{figure}
-
-This problem led us to attempt to artificially dampen the high frequencies in $\bvec{x}_1$, by manually zeroing out the high frequency Fourier coefficients. This worked reasonably well, but was not a very robust method. Our shape is nice, because $\bvec{x}_1$ can be represented accurately with very few Fourier terms, but this would not be the case for more complicated shapes and other models, such as the \textit{Smoothing Process} that affects $\bvec{x}_1$ and $\bvec{x}_2$ equally. 
 
 \subsection*{Continuous Redistribution}
 

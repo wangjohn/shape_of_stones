@@ -149,7 +149,7 @@ def spectral_derivative(x_hat, p=1):
     
 #     return w_hat
 
-PLOT_N = int(1E2)
+PLOT_N = 1E2
 def plot_spectral(x_hat):
     s_fine = fft_theta(len(x_hat))
     x_fine = real(fft.ifft(change_n(x_hat, PLOT_N), axis=0))
@@ -191,12 +191,12 @@ class SpectralShape(object):
 
     def dxdt(self, method):
         g = method(self)
-        dx_hatdt = fft.fft(g[:,newaxis] * self.surface_normal(), axis=0)
+        dx_hatdt = g[:,newaxis] * self.surface_normal()
         
         x_ddot = real(fft.ifft(spectral_derivative(self.x_hat, p=2), axis=0))
         a_t = vdot(x_ddot, self.surface_tangent())
         a_t *= norm(g) / norm(a_t)
-        dx_hatdt += fft.fft(a_t[:,newaxis] * self.surface_tangent(), axis=0)
+        dx_hatdt += a_t[:,newaxis] * self.surface_tangent()
 
         return dx_hatdt
 
@@ -214,25 +214,16 @@ class SpectralShape(object):
 
 # -----------------------------------------------------------------------------
 
-def complex_to_real(mat):
-    out = hstack([real(mat), imag(mat)])
-    return out
-
-def real_to_complex(mat):
-    out = mat[:,:2] + 1j*mat[:,2:]
-    return out
-
 def run_simulation(shape, t_steps, method):
-    def func(x_hat_real, t):
-        shape.x_hat = real_to_complex(x_hat_real.reshape(-1,4)).copy()
-        return complex_to_real(shape.dxdt(method)).flatten()
+    def func(x, t):
+        shape.x = x.reshape(-1,2)
+        return shape.dxdt(method).flatten()
 
-    x_hat_real = complex_to_real(shape.x_hat).flatten()
-    x_hat_simulation = integrate.odeint(func, x_hat_real, t_steps)
-    x_hat_simulation = x_hat_simulation.reshape(len(t_steps), -1, 4)
+    x_simulation = integrate.odeint(func, shape.x.flatten(), t_steps)
+    x_simulation = x_simulation.reshape(len(t_steps), -1, 2)
 
     for i in arange(STEPS, step=int(STEPS/2)):
-        shape.x_hat = real_to_complex(x_hat_simulation[i])
+        shape.x = x_simulation[i]
         shape.plot(label="t = {:.2f}".format(t_steps[i]))
 
     legend()
