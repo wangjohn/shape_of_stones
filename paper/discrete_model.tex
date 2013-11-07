@@ -22,11 +22,15 @@ The centroid $\bvec{c}_s$ of a stone $s$ is the center of mass of the stone when
  \int_V (\bvec{r} - \bvec{c}_s) dV = 0
 \end{eqnarray}
 
-Where $V$ is the area of the stone, using all values $\bvec{r} \in V$.
+Where $V$ is the area of the stone, using all values $\bvec{r} \in V$. 
+
+In addition, we will define a pseudo-probability distribution, which we will use to generate random points on a line.
 
 \begin{definition}
-  A pseudo-probability distribution $P$.
+  A pseudo-probability distribution $\mathrm{P}(x, y)$ defines $Pr[i | \mathrm{P}]$, the probability of selecting some $i \in \mathrm{R}$, such that $Pr[i | \mathrm{P}] = 0$ for $i \notin [x,y]$ and $\int_{x}^y Pr[i | \mathrm{P}] di = 1$. We use the notation $j \sim \mathrm{P}(x,y)$ to denote that $j \in [x,y]$ is a realization of a draw from the pseudo-probability distribution $\mathrm{P}(x,y)$. In other words, we select $j$ with probability $Pr[j | \mathrm{P}]$.
 \end{definition}
+
+For example, one possible pseudo-probability distribution $\mathrm{P}(x,y)$ would have $Pr[i | \mathrm{P}] = \frac{1}{y-x}$ for all $i \in [x,y]$. This would be the uniform pseudo-probability distribution on a range $[x,y]$.
 
 We will also introduce the notion of a convex vertex, which will be useful when defining our chipping process.
 
@@ -40,13 +44,13 @@ In the following sections, we will assume that one cannot chip a vertex which is
 
 With this in mind, we shall now develop a model for the chipping of a stone based on shearing. We will confine our work to $\mathrm{R}^2$. The main idea of the model is that we will represent a stone as a two-dimensional polygon, and chip off a constant amount of area of the stone at every time step. In this way, we will attempt to capture the process of a stone colliding with another stone on a riverbed. Randomness will be introduced into the model by randomly selecting somewhere on the stone to start the shearing.
 
-We shall now give a formal definition of the chipping process. A chip for a probability distribution $\mathrm{P}$, stone $s$, and area $A$ is denoted $Chip(\mathrm{P}, A, s)$ and is represented as follows:
+We shall now give a formal definition of the chipping process. A chip for a pseudo-probability distribution $\mathrm{P}(0,1)$, stone $s$, and area $A$ is denoted $Chip(\mathrm{P}, A, s)$ and is represented as follows:
 
 \begin{enumerate}
   \item Select a vertex $\bvec{v}_j$ from $s$. To select this vertex, we find the centroid $\bvec{c}_s$ of stone $s$ and choose an angle $\gamma \in [0, 2\pi)$ uniformly at random. Now, define the ray $\bvec{l}$ as the ray with an initial point of $\bvec{c}_s$ which extends outwards infinitely at an angle of $\gamma$ from the horizontal. The vertex with the minimum perpendicular distance to $\bvec{l}$ will be $\bvec{v}_j$. Repeat this process as many times as necessary until we have selected a convex vertex.
   \item Given vertex $\bvec{v}_j$, define $\bvec{l}_l$ as the line segment which connects $\bvec{v}_j$ and $\bvec{v}_{{j-1}}$. Similarly, define $\bvec{l}_r$ as the line segment connecting $\bvec{v}_j$ and $\bvec{v}_{{j+1}}$ (recall that our convention is to take the vertex indices modulo $n$).
   \item Select $\bvec{l}_1$ from the set $\{ \bvec{l}_l, \bvec{l}_r \}$ uniformly at random (i.e. $Pr[\bvec{l}_1 = \bvec{l}_l] = Pr[\bvec{l}_1 = \bvec{l}_r]$). Call the line segment which was not selected $\bvec{l}_2$.
-  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \in [0,1]$ such that $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1}}$. The distribution of $t$ is defined by the probability distribution $\mathrm{P}$ so that $t \sim \mathrm{P}$.
+  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \sim \mathrm{P}(0,1)$ and let $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1}}$. Recall that $t \sim \mathrm{P}(0,1)$ denotes that $t$ is drawn from the pseduo-probability distribution $\mathrm{P}(0,1)$.
   \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1}}$.
   \item Create a new stone $s'$ whose vertices are given by
     \begin{eqnarray*}
@@ -55,7 +59,11 @@ We shall now give a formal definition of the chipping process. A chip for a prob
     Here, the vertex $\bvec{v}_j$ has been replaced by $\bvec{p}_1$ and $\bvec{p}_2$ in the list of vertices for $s$. The new stone $s'$ now has one more line segment and vertex than the old stone $s$.
 \end{enumerate}
 
-A chipping process for a probability distribution $\mathrm{P}$, stone $s$, area $A$, and iterations $k$ is denoted $ChipProcess(\mathrm{P}, A, s, k)$. A chipping process returns a stone $s'$ which has iteratively been through $k$ chips. Thus, a chipping process takes a stone $s$ and creates $s_1 = Chip(\mathrm{P}, A, s)$, $s_2 = Chip(\mathrm{P}, A, s_1)$, \ldots, $s_k = Chip(\mathrm{P}, A, s_{k-1})$, and returns $s' = s_k$.
+Now that we have defined a chip $Chip(\mathrm{P}, A, s)$, we can define our entire model as a chipping process.
+
+\begin{definition}
+A chipping process for a probability distribution $\mathrm{P}$, stone $s$, area $A$, and iterations $k$ is denoted $ChipProcess(\mathrm{P}, A, s, k)$. A chipping process returns a stone $s'$ which has iteratively conducted $k$ chips. Thus, a chipping process takes a stone $s$ and creates $s_1 = Chip(\mathrm{P}, A, s)$, $s_2 = Chip(\mathrm{P}, A, s_1)$, \ldots, $s_k = Chip(\mathrm{P}, A, s_{k-1})$, and returns $s' = s_k$.
+\end{definition}
 
 \subsection{Simulations}
 
