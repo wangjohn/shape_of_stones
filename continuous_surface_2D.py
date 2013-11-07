@@ -123,8 +123,7 @@ def change_n(x_hat, n):
     return (n / n_old) * x_hat
 
 def fft_k(n):
-    # [0:n/2, -n/2+1:-1]
-    return hstack([arange(n/2+1), arange(-n/2+1, 0)])
+    return hstack(arange(n))
 
 def fft_theta(n):
     return linspace(0, 2*pi, n, endpoint=False)
