@@ -18,7 +18,7 @@ import numpy
 # Area Chipping
 
 area = 0.1
-fraction_mean = 0.025
+fraction_mean = 0.5
 fraction_std = 0.15
 vertex_chipper = AreaVertexChipper(area, fraction_mean, fraction_std)
 
@@ -74,7 +74,6 @@ def plot_histogram(vertex_chipper, iterations = 50, chips = 50):
     graph_histogram(histogram)
 
 def graph_histogram(histogram):
-    print float(sum(histogram)) / len(histogram)
     ax = pyplot.axes()
     hist = numpy.histogram(histogram, [i*0.05 for i in xrange(18)])
     pos = numpy.arange(len(hist[0]))
@@ -86,12 +85,16 @@ def graph_histogram(histogram):
 
 def plot_ellipse(a, b):
     histogram = []
-    num_steps = 20
-    for i in xrange(num_steps):
-        x = -math.sqrt(a) + 2 * math.sqrt(a) * (float(i) / num_steps)
-        y = math.sqrt(float(b) - (float(b) / float(a))*(x**2))
-        distance = (x**2.0 + y**2.0)
-        histogram.append(distance)
+    num_points = 20000
+    max_dist = max(a, b)
+    for i in xrange(num_points):
+        theta = random.uniform(-math.pi / 2.0, math.pi / 2.0)
+        slope = math.tan(theta)
+        denominator = math.sqrt(1.0 / a + (slope**2.0) / b)
+        x = 1.0 / denominator
+        ysq = float(b) - (float(b) / float(a))*(x**2)
+        distance = (x**2.0 + ysq)
+        histogram.append(distance / max_dist)
 
     graph_histogram(histogram)
 
@@ -99,5 +102,5 @@ if __name__ == '__main__':
     #plot_single(vertex_chipper, 50)
     #plot_histogram(vertex_chipper)
     #plot_many(vertex_chipper, 50)
-    plot_ellipse(2, 5)
+    plot_ellipse(5, 2)
 
