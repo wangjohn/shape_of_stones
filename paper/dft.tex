@@ -1,0 +1,27 @@
+%!TEX root = paper.tex
+
+The Discrete Fourier transform is defined as
+
+\begin{align*}
+  \boldsymbol{\hat{x}}_k& \coloneqq \mathcal{F}_k(\boldsymbol{x})\\
+  & \coloneqq \sum_{n=0}^{N-1} e^{-2\pi i k (n/N)} \boldsymbol{x}_n \qquad \text{for} \; k = 0, \dotsc, N-1
+\end{align*}
+
+And the inverse transform is defined as
+
+\begin{align*}
+  \boldsymbol{x}& \coloneqq \mathcal{F}_n^{-1}(\boldsymbol{\hat{x}})\\
+  & \coloneqq \frac{1}{N} \sum_{k=0}^{N-1} e^{2\pi i k (n/N)} \boldsymbol{\hat{x}}_k \qquad \text{for} \quad n = 0, \dotsc, N-1
+\end{align*}
+
+The FFT allows us to calculate derivatives easily with the following algorithm (a detailed derivation of the algorithm can be found in \cite{trefethen_2000})
+
+\begin{enumerate}
+  \item $\bhat{x} = \mathcal{F}(\boldsymbol{x})$
+  \item $\bhat{w}_k = ik \bhat{x}_k$ , for $k = 0, \dotsc, N-1$
+  \item Because of a lack of symmetry in the Fouerier frequencies, if p is odd, then we set $\bhat{w}_{N/2} = 0$.
+  \item Finally
+    \[
+      \frac{\partial^p \boldsymbol{x}}{\partial s^p} = \mathcal{F}^{-1}(\bhat{w})
+    \]
+\end{enumerate}

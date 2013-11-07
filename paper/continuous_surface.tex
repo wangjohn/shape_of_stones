@@ -1,33 +1,19 @@
 %!TEX root = paper.tex
 
-We next moved on to develop a continuous erosion model that operates on smooth surfaces in contrast to our previous discrete one that operated on piecewise linear surfaces. Physically this new model represents a surface being worn down gradually, such as a bar of soap in water or an ice cube melting. 
+We next moved on to develop a continuous erosion model that operates on smooth surfaces in contrast to our previous discrete model that operated on piecewise linear surfaces. Physically this new model represents a surface being worn down gradually, such as a bar of soap in water or an ice cube melting. 
 
-\subsection*{Continuous Erosion Processes}
+\subsection*{Continuous Surface}
 
-There are a wide range of different erosion processes, and most of them are far too complex for the scope of this paper. To generate simple simulations, we use key properties of the surface such as curvature and position as input variables to erosion functions.
-
-We will start by introducing an explicit representation of a surface. This choice of using an explicit representation instead of an implicit one may seem odd to the reader, but we would like to stress that this was a conscious decision on our part because it paves the pay for the use of spectral methods to represent the surface, which we will discuss more in Section \ref{sec:numerical-modeling}. To represent the surface explicitly, we will introduce a parameter $s \in [0, 2\pi)$ that increases when moving counterclockwise around the surface. Now the surface can be represented at any time $t$ by $\vec{x}(t, s) = (x_1(t, s), x_2(t, s))$, for some functions $x_1(t, s), x_2(t, s)$. In contrast to modeling erosion as a discrete process, as was done in the previous section, we will now model it with the following differential equation
-
-\[
-  \bhat{n}(t, s) = (-\dot{x}_2(t, s), \dot{x}_1(t, s))
-\]
-
-\begin{equation}
-  \frac{d(\vec{x}(t, s))}{dt} = g(t, s) \; \bhat{n}(t, s) \label{eq:erosion-diff-eq}
-\end{equation}
-
-for some function $g(\vec{x}(s))$ that depends on the erosion process.
+We will start by introducing an explicit representation of a surface. The choice of using an explicit representation instead of an implicit one may seem odd to the reader, but we would like to stress that this was a conscious decision on our part because it paves the pay for the use of spectral methods to represent the surface, which we will discuss more in Section \ref{sec:numerical-modeling}. To represent the surface explicitly, we will introduce a parameter $s \in [0, 2\pi)$ that increases when moving counterclockwise around the surface. Now the surface can be represented at any time $t \ge 0$ by $\vec{x}(t, s) = (x_1(t, s), x_2(t, s))$, for some functions $x_1(t, s), x_2(t, s)$.
 
 To simplify our equations, we introduce the following vector calculus notation
 
 \begin{align*}
-  \dot{\vec{x}}(t, s)& \coloneqq \paren{\dot{x}_1(t, s), \dot{x}_2(t, s)}\\
-  & \coloneqq \paren{\frac{dx_1(t, s)}{ds}, \frac{dx_2(t, s)}{ds}}\\
-  \ddot{\vec{x}}(t, s)& \coloneqq \paren{\ddot{x}_1(t, s), \ddot{x}_2(t, s)}\\
-  & \paren{\frac{d^2 x_1(t, s)}{ds^2}, \frac{d^2 x_2(t, s)}{ds^2}}
+  \dot{\vec{x}}(s)& \coloneqq \paren{\dot{x}_1(s), \dot{x}_2(s)}\\
+  & \coloneqq \paren{\frac{\partial x_1(s)}{ds}, \frac{\partial x_2(s)}{ds}}\\
+  \ddot{\vec{x}}(s)& \coloneqq \paren{\ddot{x}_1(s), \ddot{x}_2(s)}\\
+  & \paren{\frac{\partial^2 x_1(s)}{ds^2}, \frac{\partial^2 x_2(s)}{ds^2}}
 \end{align*}
-
-\subsection*{Example Surface}
 
 The initial shape that we will use for our simulations is shown in Figure \ref{fig:blob-shape}.
 
@@ -39,7 +25,7 @@ The initial shape that we will use for our simulations is shown in Figure \ref{f
   \caption{\label{fig:blob-shape} Example shape.}
 \end{figure}
 
-The equations for the shape are the following ($T_i$ is the i\textsuperscript{th} Chebyshev polynomial)
+The equations for the initial shape are the following ($T_i$ is the i\textsuperscript{th} Chebyshev polynomial)
 
 \begin{align*}
   x_1(0, s) = \cos(s) \paren{2 T_0\paren{\frac{s-\pi}{\pi}} + T_2\paren{\frac{s-\pi}{\pi}}}\\
@@ -48,21 +34,37 @@ The equations for the shape are the following ($T_i$ is the i\textsuperscript{th
 
 The method used to represent the shape numerically will be explained in Section \ref{sec:numerical-modeling}, but first we will take a moment to explain the various erosion processes that we will model in this section.
 
+\subsection*{Continuous Erosion Processes}
+
+All the processes that we will look at in this section, will move all points on the surface in a direction normal to the surface at each point, where the surface normal is defined as follows
+
+\[
+  \hat{n}(\vec{x}(s)) = (-\dot{\vec{x}}_2(s), \dot{\vec{x}}_1(s))
+\]
+
+In contrast to modeling erosion as a discrete process, as was done in the previous section, we will now model it with the following differential equation
+
+\begin{equation}
+  \frac{\partial \vec{x}(t, s)}{\partial t} = g(\vec{x}(t, s)) \; \hat{n}(t, s) \label{eq:erosion-diff-eq}
+\end{equation}
+
+for some function $g(\vec{x}(s))$ that depends on the erosion process.
+
 \subsubsection*{Smoothing Process}
 
 One of the processes that we will look at is a soap bar being worn down by a person holding it in their hand, which we will call the \textit{Smoothing Process}. In this process, the corners of the surface will get worn down quickest, because they are the first parts of the surface to come into contact with the person's hand. Technically the furthest protruding bumps will be worn down quickest, but to simplify the problem, we consider every point of the surface to wear down at a rate proportional to the curvature at the point. We will use a signed curvature $\kappa$, so that a bump will have positive curvature, and an indentation will have negative curvature. 
 
 \[
-  \kappa(t, s) = \frac{\dot{\vec{x}}(t, s) \times \ddot{\vec{x}}(t, s)}{\norm{\dot{\vec{x}}(t, s)}^3}
+  \kappa(\vec{x}(s)) = \frac{\dot{\vec{x}}(s) \times \ddot{\vec{x}}(s)}{\norm{\dot{\vec{x}}(s)}^3}
 \]
 
-$g(t, s)$ for this model is the following
+$g(\vec{x}(s))$ for this model is the following
 
 \begin{equation}
-  g(t, s) = \tan^{-1}(\beta \, (\kappa(t, s) - \alpha)) + \frac{\pi}{2}
+  g(\vec{x}(s)) = \tan^{-1}(\beta \, (\kappa(\vec{x}(s)) - \alpha)) + \frac{\pi}{2}
 \end{equation}
 
-For our simulations we chose $\alpha = 1, \; \beta = 5$ so that $g(s) \le 3$ ($\kappa(0, s) \in [-2, 2]$ for all $s \in [0, 2\pi]$). This restriction is not based on the physics of the problem, and was chosen purely for the aesthetic look of the resulting simulation.
+For our simulations we chose $\alpha = 1, \; \beta = 5$ so that $g(\vec{x}(s)) \le 3$ ($\kappa(\vec{x}(0, s)) \in [-2, 2]$). This restriction is not based on the physics of the problem, and was chosen purely for the aesthetic look of the resulting simulation.
 
 \begin{figure}[H]
     \begin{center}
@@ -74,10 +76,10 @@ For our simulations we chose $\alpha = 1, \; \beta = 5$ so that $g(s) \le 3$ ($\
 
 \subsubsection*{Bottom Recession Process}
 
-Our second process is an object sitting in a bath of acid, which we will call our \textit{Bottom Recession Process}. In this process, the lowest points (smallest values of $\vec{x}_2$) on the surface will erode quickest. $g(t, s)$ for this model is the following
+Our second process is an object sitting in a bath of acid, which we will call our \textit{Bottom Recession Process}. In this process, given a time $t_1$, the lowest points (smallest values of $\vec{x}_2(t_1, 0)$) on the surface will erode quickest. $g(\vec{x}(s))$ for this model is the following
 
 \begin{gather}
-  x_{2, min}(t) = \min_{s}(x_2(t, s)) \notag\\
+  x_{2, min}(t) = \min(x_2(s)) \notag\\
   f(s) = \frac{1}{\alpha \, (x_2(s) - x_{2, min}(t)) + \beta} - \gamma \notag\\
   g(s) = \begin{cases}
     f(s) \qquad &\text{for} \quad f(s) > 0\\
@@ -85,7 +87,7 @@ Our second process is an object sitting in a bath of acid, which we will call ou
   \end{cases}
 \end{gather}
 
-For our simulations we chose $\alpha = 10, \; \beta = \gamma = 0.1$ so that $g(s) \approx 1$ for $x_2(s) \approx x_{2,min}$.
+For our simulations we chose $\alpha = 10, \; \beta = \gamma = 0.1$ so that $g(\vec{x}(s)) \approx 1$ for $x_2(s) \approx x_{2,min}$.
 
 \begin{figure}[H]
     \begin{center}
@@ -98,39 +100,23 @@ For our simulations we chose $\alpha = 10, \; \beta = \gamma = 0.1$ so that $g(s
 
 \subsection*{Numerical Modeling}\label{sec:numerical-modeling}
 
-We chose to model the surface parametrically with a Discrete Fourier series and use the Fast Fourier Transform (FFT) for implementing Equation \ref{eq:erosion-diff-eq}. This is because spectral methods will maintain the smoothness of the surface much better than a local approximation of the surface using finite differences which only acts locally at points. When we refer to smoothness, we are really referring to how many derivatives of the function are bounded, or in other words, how quickly the Fourier coefficients go to $0$. Since, the surface is in $\R^2$, we will use the Real Fast Fourier Transform ($\mathcal{F}$), since it is slightly faster than the standard Fast Fourier Transform (equations for the $\mathcal{F}$ can be found in the appendix). 
+We chose to model the parametric surface functions with Discrete Fourier series. This is because spectral methods will maintain the smoothness of the surface much better than a local approximation of the surface using finite differences which only acts locally at points. The DFT and surface derivatives can be calculated quickly using the Fast Fourier Transform (refer to Appendix \ref{sec:dft} for more details).
 
-To model the surface parametrically, we define a parameter vector 
-
-\[ \boldsymbol{s}_k = 2 \pi \, \frac{n}{N} \; , \; \text{for} \; n = 0, \dotsc, N-1 \] 
-
-then we generate a matrix of evaluation points
+To integrate Equation \ref{eq:erosion-diff-eq}, we sample the surface at parameter values $s_n = 2 \pi \, \frac{n}{N} \; , \; n = 0, \dotsc, N-1$, which gives us a matrix of initial evaluation points
 
 \begin{align*} 
-  \boldsymbol{x} = \begin{bmatrix}
-    x_1(\boldsymbol{s}_1)& x_2(\boldsymbol{s}_1)\\
+  \boldsymbol{x}_0 = \begin{bmatrix}
+    x_1(0, s_1)& x_2(0, s_1)\\
     \vdots& \vdots\\
-    x_1(\boldsymbol{s}_N)& x_2(\boldsymbol{s}_N)\\ 
+    x_1(0, s_N)& x_2(0, s_N)\\ 
   \end{bmatrix}
 \end{align*}
 
-The FFT allows us to calculate derivatives easily with the following algorithm (a detailed derivation of the algorithm can be found in \cite{trefethen_2000})
-
-\begin{enumerate}
-  \item $\bhat{x} = \mathcal{F}(\boldsymbol{x})$
-  \item $\bhat{w}_k = ik \bhat{x}_k$ , for $k = 0, \dotsc, N-1$
-  \item Because of a lack of symmetry in the Fouerier frequencies, if p is odd, then we set $\bhat{w}_{N/2} = 0$.
-  \item Finally
-    \[
-      \frac{d^p \boldsymbol{v}}{ds^p} = \mathcal{F}^{-1}(\bhat{w})
-    \]
-\end{enumerate}
-
-Forward time integration of Equation \ref{eq:erosion-diff-eq} can now be implemented with a standard ODE time stepping integration methods. In this paper, we used SciPy's {\tt odeint} method for integrating Equation \ref{eq:erosion-diff-eq}.
+Forward time integration of Equation \ref{eq:erosion-diff-eq} can then be implemented with standard ODE time stepping integration methods. In this paper, we used SciPy's {\tt odeint} method for integrating Equation \ref{eq:erosion-diff-eq}.
 
 \subsection*{Point Collision Problems}
 
-Unfortunately, the simplicity gained from modeling the surface with a Fourier series is soon lost when we start time stepping. As can be seen in Figure \ref{fig:remove-lowest-blob-bad}, the process works well for a short time period, but then the surface forms loops (a physical impossibility).
+Unfortunately, the simplicity gained from modeling the surface with a Fourier series is soon lost when we start time stepping. As can be seen in Figure \ref{fig:remove-lowest-blob-bad}, the surface forms loops as time is increased (a physical impossibility).
 
 \begin{figure}[H]
     \begin{center}
@@ -154,37 +140,31 @@ Looking closely, it can be seen that areas of high curvature form when evaluatio
 
 \subsection*{Redistributing Points}
 
-A seemingly obvious way to fix this problem would be to redistribute the points evenly on the surface at every step. This wouldn't be too difficult of a task, since we can easily integrate and interpolate with the FFT and find a new set of evaluation points, $\boldsymbol{x}$ that are evenly spaced on the surface. 
-
-Unfortunately, if we arbitrarily move points around, we lose spectral accuracy, because our new points will be sampled at different parameter values $\tilde{s} \ne s$, but the Discrete Fourier transform assumes that the points are sampled at $s$. 
+A seemingly obvious way to fix this problem would be to interpolate and find a new set of evaluation points that are evenly spaced along the surface. This wouldn't be too difficult of a task, since we can integrate and interpolate via the FFT. Unfortunately, if we pick points on the surface at arbitrary values of $s$, we lose spectral accuracy, because our new points will be sampled at different parameter values $\tilde{s} \ne s$, but the Discrete Fourier transform assumes that the points are sampled at $s$. 
 
 
 The DFT is still assuming the function is sampled at
 
 \[ \boldsymbol{s}_n = 2 \pi \, \frac{n}{N} \; , \; \text{for} \; n = 0, \dotsc, N-1 \]  
 
-When we redistribute, we are sampling at frequencies $\boldsymbol{\tilde{s}} \ne \boldsymbol{s}$. In the continuous sense, this redistribution is defined by a parameter transformation $\tilde{s} = g(s)$, s.t.
+When we redistribute, we are sampling at new parameter values $\boldsymbol{\tilde{s}} \ne \boldsymbol{s}$. In the continuous sense, this redistribution is defined by a parameter transformation
 
-\[ \tilde{s}(s) = g(s), s.t. \frac{d \norm{\vec{x}}}{d\tilde{s}} \]
+\[ 
+  \tilde{s}(s) = h(s) \; s.t. \; \norm{\frac{\partial \vec{x}(s)}{\partial \tilde{s}(s)}} = constant
+\]
 
 Our shape function becomes
 
-\[ \tilde{x}(s) = (x \circ g)(s) \]
+\[ \tilde{x}(s) = (x \circ h)(s) \]
 
-The Fourier series for this composite function may decay slowly, in which case the DFT will not accurately represent the surface.
-
-This parameter transformation is okay if there exists some smooth (ideally analytic) function, $h(s)$, such that $h(s) = \tilde{s}$. This technique of parameter transformation is utilized extensively in spectral methods involving Chebyshev polynomials which use $h(s) = \cos(s)$ to cluster evaluation points near both endpoints of the domain.
-
-Redistributing points in such a way to ensure that $h(s)$ exists is difficult though, so we will first describe some different methods we attempted at eliminating the surface folding.
+There is absolutely no guarentee that the Fourier series of this composite function will decay at a reasonable rate, so the DFT with resolution N could poorly capture the surface shape. The method is not withough hope, since the technique of parameter transformation is utilized extensively in spectral methods such as the transformation $h(s) = \cos(s)$ used with Chebyshev spectral methods to cluster evaluation points near the endpoints of the domain. We just need to find a way to generate a parameter transformation, $h(s)$ such that that $(x \circ h)(s)$ has a rapidly decaying Fourier series.
 
 \subsection*{Continuous Redistribution}
-
-Rather than , such that $(x \circ g)(s)$ is smooth as described above we decided to model our redistribution by adding a term to Equation \ref{eq:erosion-diff-eq}, which is shown below. This works out nicely, because now the redistribution is smooth, so $h(s)$ must exist, as long as Equation \ref{eq:redist-diff-eq} has a solution.
 
 If we look at $\vec{x}(t, s)$ at some time $t = t_1$, then we can .
 
 \begin{align}
-  \frac{d\vec{x}_{r}(t_1, s, t')}{dt'}& = a_t(t_1, s, t') \frac{\dot{\vec{x}}_r(t_1, s, t')}{\norm{\dot{\vec{x}}_r(t_1, s, t')}} \; , \quad \vec{x}_r(t_1, s, 0) = \vec{x}(t_1, s)  \notag \\
+  \frac{\partial \vec{x}_{r}(t_1, s, t')}{\partial t'}& = a_t(t_1, s, t') \frac{\dot{\vec{x}}_r(t_1, s, t')}{\norm{\dot{\vec{x}}_r(t_1, s, t')}} \; , \quad \vec{x}_r(t_1, s, 0) = \vec{x}(t_1, s)  \notag \\
   &= \frac{\ddot{\vec{x}}_r(t_1, s, t') \boldsymbol{\cdot} \dot{\vec{x}}_r(t_1, s, t')}{\norm{\ddot{\vec{x}}_r(t_1, s, t')} \; \norm{\dot{\vec{x}}_r(t_1, s, t')}} \; \frac{\dot{\vec{x}}_r(t_1, s, t')}{\norm{\dot{\vec{x}}_r(t_1, s, t')}} \label{eq:redist-diff-eq}
 \end{align}
 
@@ -197,7 +177,7 @@ Physically $\dot{\vec{x}}_r(t_1, s, t')$ is the surface tangent vector, and $\dd
 To simplify the numerical computation, we combine \ref{eq:erosion-diff-eq} and \ref{eq:redist-diff-eq} to get a single ODE
 
 \begin{equation}
-  \frac{d(\vec{x}(t, s))}{dt} = g(t, s) \; \bhat{n}(t, s) + a_t(t, s, 0) \; \frac{\dot{\vec{x}}(t_1, s)}{\norm{\dot{\vec{x}}(t_1, s)}}
+  \frac{\partial (\vec{x}(t, s))}{\partial t} = g(t, s) \; \bhat{n}(t, s) + a_t(t, s, 0) \; \frac{\dot{\vec{x}}(t_1, s)}{\norm{\dot{\vec{x}}(t_1, s)}}
 \end{equation}
 
 As can be seen in Figure \ref{fig:remove-points-blob-good}, this dramatically improves our algorithm.
@@ -223,3 +203,17 @@ If we plot the evaluation points (Figure \ref{fig:remove-points-blob-good-points
 \subsection*{Higher dimensions}
 
 A next logical step would be to generalize the algorithm to a 3-dimensional object. In that case, the surface would be 2-dimensional rather than 1-dimensional, so we woud need two parameters $s_1, s_2$. Much of the algorithm would be similar in 
+
+\[
+  \vec{n}(t, s_1, s_2) = \frac{\partial \vec{x}(t, s_1, s_2)}{\partial s_1} \times \frac{\partial \vec{x}(t, s_1, s_2)}{\partial s_2} 
+\]
+
+Curvature $\kappa$ would generalize to mean curvature $H$
+
+\begin{align*}
+  H(t, s_1, s_2)& = \frac{\nabla \boldsymbol{\cdot} \vec{n}(t, s_1, s_2)}{2}\\
+  &= \frac{1}{2} \paren{\frac{\partial \vec{n}_1(t, s_1, s_2)}{\partial s_1} + \frac{\partial \vec{n}_2(t, s_1, s_2)}{\partial s_2}}
+\end{align*}
+
+The 2-dimensional DFT would also be needed 
+
