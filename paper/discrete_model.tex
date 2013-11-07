@@ -78,6 +78,9 @@ To examine the accuracy of our model, we performed computer simulations using th
   \caption{Chipping Process for a Unit Square \label{fig:area_chipper_sample}}
 \end{figure}
 
+
+For our simulations, we use a pseudo-probability distribution $\mathrm{P}(0,1)$ which is a normal distribution with mean $\mu$ and standard deviation $\sigma$. We select $\mu \in [0,1]$ and all realizations of the normal distribution which fall outside of $[0,1]$ are discarded and we select a new element from the normal distribution. We will denote a pseudo-probability distribution which is using a normal distribution with $\mathrm{P}(0,1) = \mathrm{N}(\mu, \sigma)$.
+
 Figure \ref{fig:area_chipper_sample} shows the results for nine chipping process runs. The parameters used in these runs were $\mathrm{P} = \mathrm{N}(0.5, 0.15)$, $A = 0.05$, $k = 50$, and $s = \{(0,0), (1,0), (1,1), (0,1)\}$. The chipping processes each started out with a stone which was a unit square. The stones were chipped 50 times by the method described by the model. The probability distribution $\mathrm{P}$ is a normal distribution so that $t = 0.5$ is the most likely $t$ to choose. In other words, it is most likely that $\bvec{p}_1$ will be chosen as the midpoint of the line segment $\bvec{l}_1$.
 
 This distribution was chosen because it is more likely that shear forces will cause a symmetric split about the vertex $\bvec{v}_j$. However, it is still possible for non-symmetric splits to occur, i.e. when $t \neq 0.5$. The normal distribution captures this nicely (all realizations of $t$ which are not in the interval $[0,1]$ were discarded).
