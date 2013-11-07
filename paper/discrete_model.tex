@@ -87,7 +87,7 @@ This distribution was chosen because it is more likely that shear forces will ca
 
 Figure \ref{fig:area_chipper_sample} displays the typical results of the chipping process model. None of the stones resemble a square and it would be hard for anyone to have guessed that these shapes came from a common origin. In fact, the randomization from the distribution $\mathrm{P}$ makes all of the shapes slightly different.
 
-To examine the chipping process more closely, we can look at how circular or elliptical the resulting shapes are. One would expect rocks in a stream or riverbed to be elliptical in shape. We can therefore examine the distance of each vertex from the centroid of the stone. In a circle, all of the distances would be the same. In an elipse, one would expect to have an even number of points which are close and far away.
+To examine the chipping process more closely, we can look at how circular or elliptical the resulting shapes are. One would expect rocks in a stream or riverbed to be elliptical in shape. We can therefore examine the distance of each vertex from the centroid of the stone. In a circle, all of the distances would be the same. In an elipse, one would expect a more bell-shaped curve since most points would be closer to the centroid.
 
 \begin{figure}
   \begin{center}
@@ -96,7 +96,7 @@ To examine the chipping process more closely, we can look at how circular or ell
   \caption{Histogram of Vertex Distance From Centroid \label{fig:distance_from_centroid}}
 \end{figure}
 
-Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. One can see that the distribution looks fairly normal, with a mean of a distance of 0.472. The distribution of vertex distances from the centroid show that the shapes that result from this set of chipping process conditions are neither elliptical nor spherical. However, a probability distribution $\mathrm{P} = \mathrm{N}(0.5, 0.15)$ tends to create a distribution of vertex distances from the centroid which are normal.
+Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. One can see that the distribution looks fairly normal, with a mean of a distance of 0.472. The distribution of vertex distances from the centroid show that the shapes that result from this set of chipping process conditions have the same distribution as an ellipse would.
 
 Choosing a different distribution for $\mathrm{P}$ yields dramatically different results. For example, if we choose $\mathrm{P} = \mathrm{N}(0.05, 0.15)$, we obtain the distribution shown in figure \ref{fig:distance_from_centroid_skewed}.
 
