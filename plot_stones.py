@@ -96,6 +96,9 @@ def plot_ellipse(a, b):
         distance = (x**2.0 + ysq)
         histogram.append(distance / max_dist)
 
+    max_dist = max(histogram)
+    min_dist = min(histogram)
+    histogram = [(i - min_dist) / (max_dist - min_dist) for i in histogram]
     graph_histogram(histogram)
 
 def plot_kite():
@@ -112,8 +115,8 @@ def plot_kite():
 
 if __name__ == '__main__':
     #plot_single(vertex_chipper, 50)
-    plot_histogram(vertex_chipper, iterations = 100)
+    #plot_histogram(vertex_chipper, iterations = 100)
     #plot_many(vertex_chipper, 50)
-    #plot_ellipse(2, 5)
+    plot_ellipse(1.0, 1.5)
     #plot_kite()
 
