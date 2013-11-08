@@ -68,7 +68,7 @@ def plot_histogram(vertex_chipper, iterations = 50, chips = 50):
         vertex_chipper.chip(chips)
         polygon = vertex_chipper.stone.polygon
 
-        distances = vertex_chipper.stone.distances_from_centroid()
+        distances = vertex_chipper.stone.distances_from_centroid(300)
         histogram.extend(distances)
 
     graph_histogram(histogram)
@@ -79,7 +79,7 @@ def graph_histogram(histogram):
     pos = numpy.arange(len(hist[0]))
     ax.set_xticks(pos + 1.0/2)
     ax.set_xticklabels(hist[1])
-    ax.set_xlabel('Distance from Centroid')
+    ax.set_xlabel('Scaled Distance from Centroid')
     pyplot.bar(pos, hist[0], 1.0, color='r')
     pyplot.show()
 
@@ -98,9 +98,22 @@ def plot_ellipse(a, b):
 
     graph_histogram(histogram)
 
+def plot_kite():
+    kite = geometry.Polygon([(1.0, 0.0), (0.5, 1.3), (0.0, 2.5), (-0.5, 1.3), (-1.0, 0.0), (0.0, -1.0), (1.0, 0.0)])
+    stone = Stone(kite)
+    histogram = stone.distances_from_centroid(4000)
+    print kite.centroid
+
+    max_dist = max(histogram)
+    print max_dist
+    histogram = [float(i) / max_dist for i in histogram]
+
+    graph_histogram(histogram)
+
 if __name__ == '__main__':
     #plot_single(vertex_chipper, 50)
-    #plot_histogram(vertex_chipper)
+    plot_histogram(vertex_chipper, iterations = 100)
     #plot_many(vertex_chipper, 50)
-    plot_ellipse(5, 2)
+    #plot_ellipse(2, 5)
+    #plot_kite()
 

@@ -266,12 +266,27 @@ class Stone:
     def distances_from_centroid(self, num_intervals = 25):
         center = geometry.Point(self.polygon.centroid)
         distances = []
+        line = geometry.LineString([center.coords[0], (5000, 0)])
         for i in xrange(num_intervals):
-            xcoord = (float(i) / num_intervals)
-            line = geometry.LineString([(xcoord, 0), (xcoord, 1)])
+            angle = random.uniform(0, 2.0*math.pi)
+            line = affinity.rotate(line, angle, center, use_radians=True)
 
-            intersect = self.polygon.intersection(line)
+            intersect = self.find_intersection(line)
             for coord in intersect.coords:
                 distances.append(center.distance(geometry.Point(coord)))
 
-        return distances
+        return self._scaled_distances(distances)
+
+    def _scaled_distances(self, distances):
+        max_dist = max(distances)
+        min_dist = min(distances)
+        return [(float(i) - min_dist)/ (max_dist - min_dist) for i in distances]
+
+    def find_intersection(self, line):
+        for i in xrange(len(self.polygon.exterior.coords)-1):
+            vertex_current = self.polygon.exterior.coords[i]
+            vertex_next = self.polygon.exterior.coords[i+1]
+            polygon_line = geometry.LineString([vertex_current, vertex_next])
+
+            if polygon_line.intersects(line):
+                return polygon_line.intersection(line)
