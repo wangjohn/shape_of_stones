@@ -106,9 +106,20 @@ We can get intuition for this metric by examining common shapes. In a circle, al
 
 \begin{figure}
   \begin{center}
+    \includegraphics[width=4in]{ellipse_distances.pdf}
+  \end{center}
+  \caption{Histogram of Scaled Distances for an Ellipse ($x^2 + \frac{y^2}{1.5} = 1$) \label{fig:ellipse_distances}}
+\end{figure}
+
+Figure \ref{fig:ellipse_distances} provides a sample of scaled distances computed for an ellipse with a formula of $x^2 + \frac{y^2}{1.5} = 1$. We computed 20,000 random points on the ellipse, computed the scaled distances for each point from the centroid, then plotted it in figure \ref{fig:ellipse_distances}. One can see that the resulting distribution is skewed towards closer points, just as we had predicted. Now, we will show the results of generating stones and aggregating the scaled distances across multiple stones from our chipping process.
+
+\begin{figure}
+  \begin{center}
     \includegraphics[width=4in]{distance_from_centroid.pdf}
   \end{center}
-  \caption{Histogram of Vertex Distance From Centroid \label{fig:distance_from_centroid}}
+  \caption{Histogram of Scaled Distances for 100 Generated Stones \label{fig:distance_from_centroid}}
 \end{figure}
 
 Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. One can see that the distribution is skewed, with most points being closer to the centroid. The distribution of vertex distances from the centroid show that the shapes that result from this set of chipping process conditions have a similar distribution as an ellipse would.
+
+We see that our chipping process model indeed provides a good approximation of a stone. The resulting stone distribution shows that the stones we generated were flat and long, much like stones one would find in the real world.
