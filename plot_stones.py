@@ -115,8 +115,8 @@ def plot_kite():
 
 if __name__ == '__main__':
     #plot_single(vertex_chipper, 50)
-    #plot_histogram(vertex_chipper, iterations = 100)
+    plot_histogram(vertex_chipper, iterations = 100)
     #plot_many(vertex_chipper, 50)
-    plot_ellipse(1.0, 1.5)
+    #plot_ellipse(1.0, 1.5)
     #plot_kite()
 
