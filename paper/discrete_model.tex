@@ -2,16 +2,16 @@ In this section, we shall describe a model for simulating the chipping of a ston
 
 \subsection{Shearing Stones}
 
-The discrete model for stone erosion is based on the idea that stones are eroded via chipping. The process of chipping is analogous to dropping a stone from a specified height and applying a shear force to a particular point on the stone. Intuitively, one can think of a stone in a stream being eroded by being tossed and turned by the force of the river. This tossing and turning causes the stone to collide with other stones on the bottom of the riverbed, causing chipping to occur.
+The process of chipping is analogous to dropping a stone from a specified height and causing the stone to crack from hitting the ground. One can imagine this happening to a stone in a stream by being tossed and turned by the force of the river, causing the stone to collide with other stones on the bottom of the riverbed.
 
-We model the interaction between two stones as a shear force, a force that causes two parts of a stone to move in opposite directions. The point where a stone collides with another stone is the point where the shear force is concentrated. This causes the stone to break into two pieces. The processes by which shear forces cause breakages in materials are extremely complicated, so we will use the following simple assumption: we shall assume that the amount of volume that is sheared off of a stone is proportional to the amount of force incident on the stone.
+We model the interaction between two stones as a normal force. The point where a stone collides with another stone is the point where the normal force is concentrated. The stone breaks into two pieces at this point. The processes by which normal forces cause breakages in materials are extremely complicated, so we will use the following simple assumption: we shall assume that the amount of volume that is sheared off of a stone is proportional to the amount of force incident on the stone.
 
 \subsection{Definitions}
 
-This section will define how we represent a stone in the discrete model. We will represent a stone as a polygon in $k$-dimensional space with $n$ vertices.
+This section will define how we represent a stone in our discrete model. We will represent a stone as a polygon in $k$-dimensional space with $n$ vertices.
 
 \begin{definition}
-  A polygon $s$ consisting of $n$ vertices is defined by the set of vertices $s = \{ \bvec{v}_0, \ldots, \bvec{v}_{n-1} \}$ where each vertex $\bvec{v}_i \in \mathrm{R}^k$ is a tuple. Vertices $\bvec{v}_i$ and $\bvec{v}_{i+1}$ are connected by a line segment for all $i \in \{0, 1, \ldots, n \}$ and the line segments do not intersect each other, except at the vertices.
+  Let $s$ be a polygon consist of $n$ vertices $s = \{ \bvec{v}_0, \ldots, \bvec{v}_{n-1} \}$ where each vertex $\bvec{v}_i \in \mathrm{R}^k$ is represented by a tuple. Vertices $\bvec{v}_i$ and $\bvec{v}_{i+1}$ are connected by a line segment for all $i \in \{0, 1, \ldots, n \}$ and the line segments do not intersect each other, except at the vertices.
 \end{definition}
 
 When referring to vertices, we will use the convention of taking vertex indices modulo $n$ for convenience. Hence $v_{i \mod{n}} \equiv v_i$. Note that this means that $v_{n} = v_{0}$ so that vertex $v_{n-1}$ has a line segment connecting it to $v_{0}$.
@@ -19,20 +19,10 @@ When referring to vertices, we will use the convention of taking vertex indices 
 The centroid $\bvec{c}_s$ of a stone $s$ is the center of mass of the stone when the stone has uniform density. In other words, the centroid is the point $\bvec{c}_s \in \mathrm{R}^k$ where the following holds:
 
 \begin{eqnarray}
- \int_V (\bvec{r} - \bvec{c}_s) dV = 0
+  \bvec{c}_s = \frac{\int x g(x) dx}{\int g(x) dx}
 \end{eqnarray}
 
-Where $V$ is the area of the stone, using all values $\bvec{r} \in V$. 
-
-In addition, we will define a pseudo-probability distribution, which we will use to generate random points on a line.
-
-\begin{definition}
-  A pseudo-probability distribution $\mathrm{P}(x, y)$ has $Pr[i | \mathrm{P}] = 0$ for $i \notin [x,y]$ (where $Pr[i | \mathrm{P}]$ is the probability of selecting some $i \in \mathrm{R}$). Additionally, $\mathrm{P}(x,y)$ must have $\int_{x}^y Pr[i | \mathrm{P}] di = 1$. We use the notation $j \sim \mathrm{P}(x,y)$ to denote that $j \in [x,y]$ is a realization of a draw from the pseudo-probability distribution $\mathrm{P}(x,y)$. In other words, we select $j$ with probability $Pr[j | \mathrm{P}]$.
-\end{definition}
-
-For example, one possible pseudo-probability distribution $\mathrm{P}(x,y)$ would have $Pr[i | \mathrm{P}] = \frac{1}{y-x}$ for all $i \in [x,y]$. This would be the uniform pseudo-probability distribution on a range $[x,y]$.
-
-We will also introduce the notion of a convex vertex, which will be useful when defining our chipping process.
+Where $g(x) = 1$ for values $x \in s$ in the stone and $g(x) = 0$ otherwise. We will also introduce the notion of a convex vertex, which will be useful when defining our chipping process.
 
 \begin{definition}
   A convex vertex $\bvec{v}_c$ on a stone $s$ with $n$ vertices is a vertex $\bvec{v}_i$ which, when removed from the polygon $s$ to create a new polygon $s' = \{ \bvec{v}_0, \ldots, \bvec{v}_{i-1}, \bvec{v}_{i+1}, \ldots, \bvec{v}_{n-1} \}$ has the property $V(s) \geq V(s')$ (where $V(\cdot)$ denotes the volume of a stone).
@@ -42,7 +32,7 @@ In the following sections, we will assume that one cannot chip a vertex which is
 
 \subsection{The Chipping Process Model}
 
-With this in mind, we shall now develop a model for the chipping of a stone based on shearing. We will confine our work to $\mathrm{R}^2$. The main idea of the model is that we will represent a stone as a two-dimensional polygon, and chip off a constant amount of area of the stone at every time step. In this way, we will attempt to capture the process of a stone colliding with another stone on a riverbed. Randomness will be introduced into the model by randomly selecting somewhere on the stone to start the shearing.
+With this in mind, we shall now develop a model for the chipping of a stone. We will represent a stone as a two-dimensional polygon, and chip off a constant amount of area of the stone at every time step. In this way, we will attempt to capture the process of a stone colliding with another stone on a riverbed. Randomness will be introduced into the model by randomly selecting somewhere on the stone to start the shearing.
 
 We shall now give a formal definition of the chipping process. A chip for a pseudo-probability distribution $\mathrm{P}(0,1)$, stone $s$, and area $A$ is denoted $Chip(\mathrm{P}, A, s)$ and is represented as follows:
 
@@ -62,7 +52,7 @@ We shall now give a formal definition of the chipping process. A chip for a pseu
 Now that we have defined a chip $Chip(\mathrm{P}, A, s)$, we can define our entire model as a chipping process.
 
 \begin{definition}
-A chipping process for a probability distribution $\mathrm{P}$, stone $s$, area $A$, and iterations $k$ is denoted $ChipProcess(\mathrm{P}, A, s, k)$. A chipping process returns a stone $s'$ which has iteratively conducted $k$ chips. Thus, a chipping process takes a stone $s$ and creates $s_1 = Chip(\mathrm{P}, A, s)$, $s_2 = Chip(\mathrm{P}, A, s_1)$, \ldots, $s_k = Chip(\mathrm{P}, A, s_{k-1})$, and returns $s' = s_k$.
+A chipping process for a probability distribution $\mathrm{P}$, stone $s$, area $A$, and iterations $k$ is denoted $ChipProcess(\mathrm{P}, A, s, k)$. A chipping process returns a stone $s'$ which has recursively conducted $k$ chips. Thus, a chipping process takes a stone $s$ and creates $s_1 = Chip(\mathrm{P}, A, s)$, $s_2 = Chip(\mathrm{P}, A, s_1)$, \ldots, $s_k = Chip(\mathrm{P}, A, s_{k-1})$, and returns $s' = s_k$.
 \end{definition}
 
 \subsection{Simulations}
