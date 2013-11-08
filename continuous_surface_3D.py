@@ -64,7 +64,7 @@ def remove_lowest(shape, dim=1):
 method = {"remove_lowest": remove_lowest}[METHOD]
 
 def sphere(s):
-    x = ( sin(s[0]) * cos(s[1]) )[...,newaxis]
+    x = ( cos(s[1]) )[...,newaxis]
     y = ( sin(s[0]) * sin(s[1]) )[...,newaxis]
     z = ( cos(s[0]) )[...,newaxis]
 
@@ -91,9 +91,6 @@ def vdot(a, b):
 
 def vcross(a, b):
     return cross(a, b)
-
-def grad(a):
-    
 
 def e_vec(i, npts):
     vec = zeros(npts)
@@ -162,11 +159,14 @@ class SpectralShape(object):
 
     def x_dot(self, p=1):
         return concatenate([real(fft.ifft2(spectral_derivative(self.x_hat, 
-                    p=e_vec(i, FFT_NDIM)), axes=FFT_AXES))[...,newaxis] for i in arange(FFT_NDIM)])
+                    p=e_vec(i, FFT_NDIM)), axes=FFT_AXES))[...,newaxis] for i in arange(FFT_NDIM)], axis=-1)
 
     def surface_normal(self):
-        x_dot_n = self.x_dot()[:,(1,0)] * [-1,1]
-        x_dot_n /= vnorm(x_dot_n)[:,newaxis]
+        x_dot = self.x_dot(p=1)
+        x_dot_n = vcross(x_dot[...,0], x_dot[...,1])
+        print(vnorm(x_dot_n))
+        exit()
+        x_dot_n /= vnorm(x_dot_n)[...,newaxis]
         return x_dot_n
 
     # def surface_tangent(self):
@@ -198,12 +198,14 @@ class SpectralShape(object):
     #     a_t *= norm(g) / norm(a_t)
     #     dx_hatdt += rdft(a_t[:,newaxis] * self.surface_tangent())
 
-    #     return dx_hatdt
+        dxdt = self.surface_normal()
+
+        return dxdt
 
     def plot(self, label=None):
-        x_fine = real(fft.ifft2(change_n(self.x_hat, PLOT_NPTS * ones(FFT_NDIM)), axes=FFT_AXES))
+        x_fine = real(fft.ifft2(change_npts(self.x_hat, PLOT_NPTS * ones(FFT_NDIM)), axes=FFT_AXES))
 
-        ax.plot_wireframe(x_fine[...,0], x_fine[...,1], x_fine[...,2], rstride=10, cstride=10)
+        ax.plot_surface(x_fine[...,0], x_fine[...,1], x_fine[...,2], rstride=int(PLOT_NPTS/10), cstride=int(PLOT_NPTS/10))
         # ax.scatter(x_fine[...,0], x_fine[...,1], x_fine[...,2], c='k')
         axis('equal')
 
@@ -228,8 +230,7 @@ def run_simulation(shape, t_steps, method):
 
 s = fft_s(SIM_NPTS * ones(FFT_NDIM))
 shape = shape_func(s)
-shape.x_dot(p=1)
-exit()
+# shape.surface_normal()
 
 shape.plot()
 show()
