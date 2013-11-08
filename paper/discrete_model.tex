@@ -27,7 +27,7 @@ Where $V$ is the area of the stone, using all values $\bvec{r} \in V$.
 In addition, we will define a pseudo-probability distribution, which we will use to generate random points on a line.
 
 \begin{definition}
-  A pseudo-probability distribution $\mathrm{P}(x, y)$ defines $Pr[i | \mathrm{P}]$, the probability of selecting some $i \in \mathrm{R}$, such that $Pr[i | \mathrm{P}] = 0$ for $i \notin [x,y]$ and $\int_{x}^y Pr[i | \mathrm{P}] di = 1$. We use the notation $j \sim \mathrm{P}(x,y)$ to denote that $j \in [x,y]$ is a realization of a draw from the pseudo-probability distribution $\mathrm{P}(x,y)$. In other words, we select $j$ with probability $Pr[j | \mathrm{P}]$.
+  A pseudo-probability distribution $\mathrm{P}(x, y)$ has $Pr[i | \mathrm{P}] = 0$ for $i \notin [x,y]$ (where $Pr[i | \mathrm{P}]$ is the probability of selecting some $i \in \mathrm{R}$). Additionally, $\mathrm{P}(x,y)$ must have $\int_{x}^y Pr[i | \mathrm{P}] di = 1$. We use the notation $j \sim \mathrm{P}(x,y)$ to denote that $j \in [x,y]$ is a realization of a draw from the pseudo-probability distribution $\mathrm{P}(x,y)$. In other words, we select $j$ with probability $Pr[j | \mathrm{P}]$.
 \end{definition}
 
 For example, one possible pseudo-probability distribution $\mathrm{P}(x,y)$ would have $Pr[i | \mathrm{P}] = \frac{1}{y-x}$ for all $i \in [x,y]$. This would be the uniform pseudo-probability distribution on a range $[x,y]$.
@@ -35,7 +35,7 @@ For example, one possible pseudo-probability distribution $\mathrm{P}(x,y)$ woul
 We will also introduce the notion of a convex vertex, which will be useful when defining our chipping process.
 
 \begin{definition}
-  A convex vertex $\bvec{v}_c$ on a polygon $s$ consisting of $n$ vertices is a vertex $\bvec{v}_i$ which, when removed from the polygon $s$ to create a new polygon $s' = \{ \bvec{v}_0, \ldots, bvec{v}_{i-1}, \bvec{v}_{i+1}, \ldots, \bvec{v}_{n-1} \}$ has the property $V(s) \geq V(s')$ (where $V(\cdot)$ denotes the volume of a stone).
+  A convex vertex $\bvec{v}_c$ on a stone $s$ with $n$ vertices is a vertex $\bvec{v}_i$ which, when removed from the polygon $s$ to create a new polygon $s' = \{ \bvec{v}_0, \ldots, \bvec{v}_{i-1}, \bvec{v}_{i+1}, \ldots, \bvec{v}_{n-1} \}$ has the property $V(s) \geq V(s')$ (where $V(\cdot)$ denotes the volume of a stone).
 \end{definition}
 
 In the following sections, we will assume that one cannot chip a vertex which is not convex. The reasoning relies on our intuition for how a stone chips. Non-convex vertices can be thought of as moving in towards the center of a stone, and chipping a stone can be thought of being caused by the stone crashing into the ground. It is impossible for a stone to be chipped on a vertex which is not convex if the stone is falling onto a flat surface (the protruding vertices surrounding the convex vertex will be chipped first). Therefore, we make the assumption that convex vertices are the only ones which can be chipped through our mechanism.
@@ -50,13 +50,13 @@ We shall now give a formal definition of the chipping process. A chip for a pseu
   \item Select a vertex $\bvec{v}_j$ from $s$. To select this vertex, we find the centroid $\bvec{c}_s$ of stone $s$ and choose an angle $\gamma \in [0, 2\pi)$ uniformly at random. Now, define the ray $\bvec{l}$ as the ray with an initial point of $\bvec{c}_s$ which extends outwards infinitely at an angle of $\gamma$ from the horizontal. The vertex with the minimum perpendicular distance to $\bvec{l}$ will be $\bvec{v}_j$. Repeat this process as many times as necessary until we have selected a convex vertex.
   \item Given vertex $\bvec{v}_j$, define $\bvec{l}_l$ as the line segment which connects $\bvec{v}_j$ and $\bvec{v}_{{j-1}}$. Similarly, define $\bvec{l}_r$ as the line segment connecting $\bvec{v}_j$ and $\bvec{v}_{{j+1}}$ (recall that our convention is to take the vertex indices modulo $n$).
   \item Select $\bvec{l}_1$ from the set $\{ \bvec{l}_l, \bvec{l}_r \}$ uniformly at random (i.e. $Pr[\bvec{l}_1 = \bvec{l}_l] = Pr[\bvec{l}_1 = \bvec{l}_r]$). Call the line segment which was not selected $\bvec{l}_2$.
-  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \sim \mathrm{P}(0,1)$ and let $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1}}$. Recall that $t \sim \mathrm{P}(0,1)$ denotes that $t$ is drawn from the pseduo-probability distribution $\mathrm{P}(0,1)$.
-  \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1}}$.
+  \item Select a point $\bvec{p}_1$ at random from $\bvec{l}_1$. To do this, we select a random $t \sim \mathrm{P}(0,1)$ and let $\bvec{p}_1 = \bvec{v}_j t + (1-t) \bvec{v}_{{j-1}}$. Recall that $t \sim \mathrm{P}(0,1)$ denotes that $t$ is drawn from the pseudo-probability distribution $\mathrm{P}(0,1)$.
+  \item Select the point $\bvec{p}_2$ which lies on $\bvec{l}_2$ for which the polygon defined by $\{\bvec{p}_1, \bvec{v}_j, \bvec{p}_2\}$ has an area of $A$. If no such polygon exists, then choose $\bvec{p}_2 = \bvec{v}_{{j+1}}$ if $l_r = l_2$ and $\bvec{p}_2 = \bvec{v}_{{j-1}}$ if $l_l = l_2$.
   \item Create a new stone $s'$ whose vertices are given by
     \begin{eqnarray*}
-      s' = \{ \bvec{v}_1, \ldots, \bvec{v}_{j-1}, \bvec{p}_1, \bvec{p}_2, \bvec{v}_{j+1}, \ldots, \bvec{v}_n \}
+      s' = \{ \bvec{v}_1, \ldots, \bvec{v}_{j-1}, \bvec{p}_l, \bvec{p}_r, \bvec{v}_{j+1}, \ldots, \bvec{v}_n \}
     \end{eqnarray*}
-    Here, the vertex $\bvec{v}_j$ has been replaced by $\bvec{p}_1$ and $\bvec{p}_2$ in the list of vertices for $s$. The new stone $s'$ now has one more line segment and vertex than the old stone $s$.
+    Here, the vertex $\bvec{v}_j$ has been replaced by $\bvec{p}_l$ and $\bvec{p}_r$ in the list of vertices for $s$ (where $\bvec{p}_l$ is the point we chose on line $\bvec{l}_l$ and $\bvec{p}_r$ is the point we chose on line $\bvec{l}_r$). The new stone $s'$ now has one more line segment and vertex than the old stone $s$.
 \end{enumerate}
 
 Now that we have defined a chip $Chip(\mathrm{P}, A, s)$, we can define our entire model as a chipping process.
@@ -102,7 +102,7 @@ When we plot the distances, we will scale the distances to the centroid of a poi
   d'_s(\bvec{p}_s, \bvec{c}_s) = \frac{d(\bvec{p}_s, \bvec{c}_s) - \min_d}{ \max_d - \min_d }
 \end{eqnarray}
 
-We can get intuition for this metric by examining common shapes. In a circle, all of the distances to the centroid would be the same. In an elipse, one would expect a skewed curve, with more points lying closer to the centroid. One can see this by examining all points on an ellipse which have distances from the centroid lying in $[d, d + \epsilon]$. The slices of the ellipse which are carved out will have strictly greater total angle than the angles carved from using distances in $[d + \epsilon, d + 2 \epsilon]$.
+We can get intuition for this metric by examining common shapes. In a circle, all of the distances to the centroid would be the same. In an ellipse, one would expect a skewed curve, with more points lying closer to the centroid. One can see this by examining all points on an ellipse which have distances from the centroid lying in $[d, d + \epsilon]$. The slices of the ellipse which are carved out will have strictly greater total angle than the angles carved from using distances in $[d + \epsilon, d + 2 \epsilon]$.
 
 \begin{figure}
   \begin{center}
@@ -120,6 +120,6 @@ Figure \ref{fig:ellipse_distances} provides a sample of scaled distances compute
   \caption{Histogram of Scaled Distances for 100 Generated Stones \label{fig:distance_from_centroid}}
 \end{figure}
 
-Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. One can see that the distribution is skewed, with most points being closer to the centroid. The distribution of vertex distances from the centroid show that the shapes that result from this set of chipping process conditions have a similar distribution as an ellipse would.
+Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. We generated 100 stones using our chipping process where each stone was chipped 50 times. Then we sampled 400 random points from each resulting stone. Figure \ref{fig:distance_from_centroid} shows that the resulting distribution is skewed, with most points being closer to the centroid. The distribution of distances from the centroid shows that the shapes that result from this set of chipping process conditions have a similar distribution as an ellipse would.
 
-We see that our chipping process model indeed provides a good approximation of a stone. The resulting stone distribution shows that the stones we generated were flat and long, much like stones one would find in the real world.
+We see that our chipping process model indeed provides a good approximation of a stone. The resulting stone distribution shows that the stones we generated were flat and long, much like stones one would find in the real world. We shall now present our continuous model of erosion, which will model the gradual erosion a stone.
