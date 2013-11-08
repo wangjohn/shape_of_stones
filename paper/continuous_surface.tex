@@ -1,18 +1,18 @@
 %!TEX root = paper.tex
 
-We next moved on to develop a continuous erosion model that operates on smooth surfaces in contrast to our previous discrete model that operated on piecewise linear surfaces. Physically this new model represents a surface being worn down gradually, such as a bar of soap in water or an ice cube melting. 
+We next moved on to develop a continuous erosion model that operates on smooth surfaces, in contrast to our previous discrete model that operated on piecewise linear surfaces. Physically this new model represents a surface being worn down gradually, such as a bar of soap in water or an ice cube melting. 
 
 \subsection*{Continuous Surface}
 
-We will start by introducing a set of parametric equations to represent a surface. The choice of using a parametric representation instead of an implicit one may seem odd to the reader, but we would like to stress that this was a conscious decision on our part because it paves the pay for the use of spectral methods to represent the surface, which we will discuss more in Section \ref{sec:numerical-modeling}. 
+We will start by introducing a set of parametric equations to represent a surface. A parametric representation was chosen over an implicit one, so that we can use spectral methods and the FFT when integrating Equation \ref{eq:erosion-diff-eq}, which we will discuss in detail in Section \ref{sec:numerical-modeling}. 
 
-We will use $s \in [0, 2\pi)$ as our parameter with $s$ increasing counterclockwise along the surface. Now the coordinates of any point on the surface can be represented at any time $t \ge 0$ by two functions $x(t, s), y(t, s)$. We can also define the simpler notation
+Let us introduce $s \in [0, 2\pi)$ as our parameter with $s$ increasing counterclockwise along the surface. The coordinates of any point on the surface can be represented at time $t \ge 0$ by two functions $x(t, s), y(t, s)$. Coordinates can be written more compactly as
 
 \[ 
   \bvec{r}(t, s) \coloneqq \paren{x(t, s), y(t, s)}
 \]
 
-\textbf{Note:} The reader should keep in mind that derivative operations still apply to each coordinate individually, e.g.
+\textbf{Note:} The reader should keep in mind that derivative operators still apply to each coordinate individually, e.g.
 
 \[
   \frac{\partial \bvec{r}(t, s)}{\partial t} \coloneqq \paren{\frac{\partial x(t, s)}{\partial t}, \frac{\partial y(t, s)}{\partial t}}
@@ -32,9 +32,9 @@ The equations for the initial shape that we will use in our simulations are show
   y(0, s) = \sin(s) \paren{2 T_0\paren{\frac{s-\pi}{\pi}} + T_4(\paren{\frac{s-\pi}{\pi}})}
 \end{align*}
 
-\begin{figure}[h!]
+\begin{figure}[H]
   \begin{center}
-    \includegraphics[keepaspectratio]{blob_shape.pdf}
+    \includegraphics[keepaspectratio, width=4in]{blob_shape.pdf}
   \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{\label{fig:blob-shape} Example shape.}
@@ -44,40 +44,38 @@ The method used to represent the shape numerically will be explained in Section 
 
 \subsection*{Continuous Erosion Processes}
 
-All the processes that we will look at in this section, will move points on the surface in the direction of the surface normal, where the surface normal is defined as follows
+All of the processes that we will look at in this section, will move points on the surface in the direction of the surface normal, which is defined as
 
 \[
   \hat{n}(\bvec{r}(s)) = (-\dot{y}(s), \dot{x}(s))
 \]
 
-In contrast to modeling erosion as a discrete process, as was done in the previous section, we will now model it with the following differential equation
+We can now model our erosion process with the following differential equation, where $g(\bvec{r}(s))$ is a function specific to the erosion process being modeled.
 
 \begin{equation}
   \label{eq:erosion-diff-eq}
   \frac{\partial \bvec{r}(t, s)}{\partial t} = g(\bvec{r}(s)) \; \hat{n}(\bvec{r}(s))
 \end{equation}
 
-The function $g(\bvec{r}(s))$ will depend on the erosion process.
-
 \subsubsection*{Smoothing Process}
 
-One of the processes that we will look at is a soap bar being worn down by a person holding it in their hand, which we will call the \textit{Smoothing Process}. In this process, the corners of the surface will get worn down quickest, because they are the first parts of the surface to come into contact with the person's hand. Technically the furthest protruding bumps will be worn down quickest, but to simplify the problem, we consider every point of the surface to wear down at a rate proportional to the curvature at the point. We will use a signed curvature $\kappa$, so that a bump will have positive curvature, and an indentation will have negative curvature. 
+One of the processes that we will look at is a soap bar being worn down by a person holding it in their hand, which we will call the \textit{Smoothing Process}. In this process, bumps on the object will get worn down quickest, because they are the first parts to come into contact with the person's hand. Technically the furthest protruding bumps will be worn down quickest, but to simplify the problem, we assume that every point on the surface wears down at a rate proportional to the curvature at the point. We will use a signed curvature $\kappa$, so that a bump will have positive curvature, and an indentation will have negative curvature. 
 
 \[
   \kappa(\bvec{r}(s)) = \frac{\dot{\bvec{r}}(s) \times \ddot{\bvec{r}}(s)}{\norm{\dot{\bvec{r}}(s)}^3}
 \]
 
-and
+To make bumps erode faster than indentations, we will use the following damping function
 
 \begin{equation}
   g(\bvec{r}(s)) = \tan^{-1}(\beta \, (\kappa(\bvec{r}(s)) - \alpha)) + \frac{\pi}{2}
 \end{equation}
 
-For our simulations we chose $\alpha = 1, \; \beta = 5$ so that $g(\bvec{r}(s)) \le 3$ ($\kappa(\bvec{r}(0, s)) \in [-2, 2]$). This restriction is not based on the physics of the problem, and was chosen purely for the aesthetic look of the resulting simulation.
+For our simulations we chose $\alpha = 1, \; \beta = 5$ so that $g(\bvec{r}(s)) \approx 1$ at the corners on our initial surface. This restriction is not based on the physics of the problem, and was chosen purely for the aesthetic look of the resulting simulation.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \begin{center}
-      \includegraphics[keepaspectratio]{g_1.pdf}
+      \includegraphics[keepaspectratio, width=4in]{g_1.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{\label{fig:g-1} Plot of $g(\kappa)$ for \textit{Smoothing Process}.}
@@ -85,7 +83,7 @@ For our simulations we chose $\alpha = 1, \; \beta = 5$ so that $g(\bvec{r}(s)) 
 
 \subsubsection*{Bottom Recession Process}
 
-Our second process is an object sitting in a bath of acid, which we will call our \textit{Bottom Recession Process}. In this process, given a time $t_1$, the lowest points (smallest values of $\bvec{r}_2(t_1, 0)$) on the surface will erode quickest.
+Our second process is an object sitting in a bath of acid, which we will call our \textit{Bottom Recession Process}. In this process, the lowest points (smallest values of $y(s)$) on the surface will erode quickest.
 
 \begin{gather}
   f(s) = \frac{1}{\alpha \, (y(s) - y_{min}) + \beta} - \gamma \notag\\
@@ -97,9 +95,9 @@ Our second process is an object sitting in a bath of acid, which we will call ou
 
 For our simulations we chose $\alpha = 10, \; \beta = \gamma = 0.1$ so that $g(\bvec{r}(s)) \approx 1$ for $y(s) \approx y_{min}$.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \begin{center}
-      \includegraphics[keepaspectratio]{g_1.pdf}
+      \includegraphics[keepaspectratio, width=4in]{g_2.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{\label{fig:g-2} Plot of $g(y)$ for \textit{Bottom Recession Process}.}
@@ -129,9 +127,9 @@ Forward time integration of Equation \ref{eq:erosion-diff-eq} can then be implem
 
 Unfortunately, the simplicity gained from modeling the surface with a Fourier series is soon lost when we start time stepping. As can be seen in Figure \ref{fig:remove-lowest-blob-bad}, the surface forms loops as time is increased (a physical impossibility).
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \begin{center}
-      \includegraphics[keepaspectratio]{remove_lowest_blob_bad.pdf}
+      \includegraphics[keepaspectratio, width=4in]{remove_lowest_blob_bad.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{Time integration of \ref{eq:erosion-diff-eq} showing loop artifact.\label{fig:remove-lowest-blob-bad}}
@@ -139,9 +137,9 @@ Unfortunately, the simplicity gained from modeling the surface with a Fourier se
 
 To investigate why these loop artifacts occur, we will show a zoomed in portion of the same figure, with the evaluation points shown. 
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \begin{center}
-      \includegraphics[keepaspectratio]{remove_lowest_blob_bad_zoom.pdf}
+      \includegraphics[keepaspectratio, width=4in]{remove_lowest_blob_bad_zoom.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{Expanded view of loop artifact.\label{fig:remove-lowest-blog-bad-zoom}}
@@ -173,24 +171,31 @@ There is absolutely no guarentee that the Fourier series of this composite funct
 
 If we fix a time $t = t_1$, then we can define a differential equation that will allow us to redistribute the points and ensure that our redistributed points will still have a rapidly decaying Fourier series.
 
-Physically $\dot{\bvec{r}}(t_1, s)$ is the surface tangent vector, and $\ddot{\bvec{r}}(t_1, s)$ is the rate of change of this surface tangent vector with respect to $s$. More importantly though, $\norm{\dot{\bvec{r}}(t_1, s)}$ is inversely proportional to the density of evaluation points on the surface at $s$. We want to shift evaluation points away from denser areas which can also be thought of making $\norm{\dot{\bvec{r}}(t_1, s)}$ a constant along the surface. Thus we should move our evaluation points in the direction of larger $\norm{\dot{\bvec{r}}(t_1, s)}$ (less dense areas), which is precisely the projection of $\ddot{\bvec{r}}(t_1, s)$ onto the surface tangent vector. This idea can be written more presisely as the following differential equation
-
-\begin{align}
-  \frac{\partial \bvec{r}(t_1, \tilde{s}(t'))}{\partial t'}& = a_t(t_1, \tilde{s}(t')) \frac{\dot{\bvec{r}}(t_1, \tilde{s}(t'))}{\norm{\dot{\bvec{r}}(t_1, \tilde{s}(t'))}} \; , \quad \bvec{r}(t_1, \tilde{s}(0)) = \bvec{r}(t_1, s)  \notag \\
-  &= \frac{\ddot{\bvec{r}}(t_1, \tilde{s}(t')) \cdot \dot{\bvec{r}}(t_1, \tilde{s}(t'))}{\norm{\ddot{\bvec{r}}(t_1, \tilde{s}(t'))} \; \norm{\dot{\bvec{r}}(t_1, \tilde{s}(t'))}} \; \frac{\dot{\bvec{r}}(t_1, \tilde{s}(t'))}{\norm{\dot{\bvec{r}}(t_1, \tilde{s}(t'))}} \label{eq:redist-diff-eq}
-\end{align}
-
-To simplify the numerical computation, we combine \ref{eq:erosion-diff-eq} and \ref{eq:redist-diff-eq} to get a single ODE
+Physically $\dot{\bvec{r}}(t_1, s)$ is the surface tangent vector, and $\ddot{\bvec{r}}(t_1, s)$ is the rate of change of this surface tangent vector with respect to $s$. More importantly though, $\norm{\dot{\bvec{r}}(t_1, s)}$ is inversely proportional to the density of evaluation points on the surface at $s$. We would like to shift the evaluation points away from denser areas, thus we need move the evaluation points in the direction of larger $\norm{\dot{\bvec{r}}(t_1, s)}$, which is the projection of $\ddot{\bvec{r}}(t_1, s)$ onto the surface tangent vector.
 
 \begin{equation}
-  \frac{\partial (\bvec{r}(t, s))}{\partial t} = g(t, s) \; \bhat{n}(t, s) + a_t(t, s, 0) \; \frac{\dot{\bvec{r}}(t_1, s)}{\norm{\dot{\bvec{r}}(t_1, s)}}
+  a_t(t, s) = \ddot{\bvec{r}}(t, s) \cdot \dot{\bvec{r}}(t, s)
 \end{equation}
 
-As can be seen in Figure \ref{fig:remove-points-blob-good}, this dramatically improves our algorithm.
 
-\begin{figure}[h!]
+We can now set up a differential equation for this redistribution process.
+
+\begin{equation}
+  \label{eq:redist-diff-eq}
+  \frac{\partial \bvec{r}(t_1, \tilde{s}(t'))}{\partial t'} = a_t(t_1, \tilde{s}(t')) \frac{\dot{\bvec{r}}(t_1, \tilde{s}(t'))}{\norm{\dot{\bvec{r}}(t_1, \tilde{s}(t'))}} \; , \quad \tilde{s}(0) = s
+\end{equation}
+
+To simplify the numerical computation, we can combine Equations \ref{eq:erosion-diff-eq} and \ref{eq:redist-diff-eq} to get a single ODE
+
+\begin{equation}
+  \frac{\partial (\bvec{r}(t, s))}{\partial t} = g(t, s) \; \bhat{n}(t, s) + a_t(t, s) \; \frac{\dot{\bvec{r}}(t_1, s)}{\norm{\dot{\bvec{r}}(t_1, s)}}
+\end{equation}
+
+As can be seen in Figure \ref{fig:remove-points-blob-good}, this modification dramatically improves our algorithm.
+
+\begin{figure}[H]
     \begin{center}
-      \includegraphics[keepaspectratio]{remove_points_blob_good.pdf}
+      \includegraphics[keepaspectratio, width=4in]{remove_points_blob_good.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{\label{fig:remove-points-blob-good}\textit{Bottom recession process} simulation with point redistribution.}
@@ -198,9 +203,9 @@ As can be seen in Figure \ref{fig:remove-points-blob-good}, this dramatically im
 
 If we plot the evaluation points (Figure \ref{fig:remove-points-blob-good-points}), it can be seen that the points nicely redistribute themselves as time increases to stay evenly spaced on the surface.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \begin{center}
-      \includegraphics[keepaspectratio]{remove_points_blob_good_points.pdf}
+      \includegraphics[keepaspectratio, width=4in]{remove_points_blob_good_points.pdf}
     \end{center}
   \vspace{-.2in} % corrects bad spacing
   \caption{\label{fig:remove-points-blob-good-points}\textit{Smoothing process} simulation with evaluation points shown.}
@@ -208,16 +213,20 @@ If we plot the evaluation points (Figure \ref{fig:remove-points-blob-good-points
 
 \subsection*{Higher dimensions}
 
-A next logical step would be to generalize the algorithm to a 2-dimensional surface where we woud need two parameters $s_1, s_2$. Much of the algorithm would be similar, except that we would need to use the 2-dimensional discrete Fourier transform.
+A next logical step would be to generalize the algorithm to a 2-dimensional surface that would be parameterized by $s_1, s_2 \in [0, 2\pi)$. Much of the algorithm would be similar, except that we would need to use the 2-dimensional discrete Fourier transform (refer to Appendix \ref{sec:dft}).
+
+The surface normal vector equation for a surface in 3-dimensional space is the following
 
 \[
   \bvec{n}(t, s_1, s_2) = \frac{\partial \bvec{r}(t, s_1, s_2)}{\partial s_1} \times \frac{\partial \bvec{r}(t, s_1, s_2)}{\partial s_2} 
 \]
 
-Curvature $\kappa$ would generalize to mean curvature $H$
+Curvature $\kappa$ could be generalized to mean curvature $H$
 
 \begin{align*}
   H(t, s_1, s_2)& = \frac{\nabla \cdot \bvec{n}(t, s_1, s_2)}{2}\\
   &= \frac{1}{2} \paren{\frac{\partial \bvec{n}_1(t, s_1, s_2)}{\partial s_1} + \frac{\partial \bvec{n}_2(t, s_1, s_2)}{\partial s_2}}
 \end{align*}
+
+Avoiding singularities when mapping the 2-dimensional surface to an N x N array would likely be difficult, but the mapping only needs to be used to sample the initial points on the object, and the redistribution algorithm can be oblivious to the mapping.
 
