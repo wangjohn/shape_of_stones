@@ -87,7 +87,22 @@ This distribution was chosen because it is more likely that shear forces will ca
 
 Figure \ref{fig:area_chipper_sample} displays the typical results of the chipping process model. None of the stones resemble a square and it would be hard for anyone to have guessed that these shapes came from a common origin. In fact, the randomization from the distribution $\mathrm{P}$ makes all of the shapes slightly different.
 
-To examine the chipping process more closely, we can look at how circular or elliptical the resulting shapes are. One would expect rocks in a stream or riverbed to be elliptical in shape. We can therefore examine the distance of each vertex from the centroid of the stone. In a circle, all of the distances would be the same. In an elipse, one would expect a more bell-shaped curve since most points would be closer to the centroid.
+To examine the chipping process more closely, we can look at how circular or elliptical the resulting shapes are. One would expect rocks in a stream or riverbed to be elliptical in shape. We can therefore examine the distance of random points on a stone from the centroid. We will generate a large number of random points, and plot their distances from the centroid.
+
+More precisely, a random point $\bvec{p}_s$ on the stone $s$ will be selected by the following process:
+\begin{enumerate}
+  \item Produce a random angle $\theta \in [0, 2\pi)$, drawn uniformly from the range $[0, 2\pi)$.
+  \item Draw a ray from the centroid of the stone with an angle $\theta$ from the horizontal (x-axis).
+  \item The ray will intersect with the stone in exactly one location (since the stone is closed). Set the random point $\bvec{p}_s$ as the point where the ray intersects an edge on the stone.
+\end{enumerate}
+
+When we plot the distances, we will scale the distances to the centroid of a point $\bvec{p}_s$, denoted by $d(\bvec{p}_s, \bvec{c}_s)$. We will sample $q$ random points from the stone, and plot the scaled distances. Let $\min_d = \min d(\bvec{p}_s, \bvec{c}_s)$ be the minimum observed distance and $\max_d = \max d(\bvec{p}_s, \bvec{c}_s)$ be the maximum observed centroid distances for the $q$ samples on a stone $s$. We will define the scaled distance to the centroid of a stone $s$ as $d'_s(\bvec{p}_s, \bvec{c}_s)$ with the following formula:
+
+\begin{eqnarray}
+  d'_s(\bvec{p}_s, \bvec{c}_s) = \frac{d(\bvec{p}_s, \bvec{c}_s) - \min_d}{ \max_d - \min_d }
+\end{eqnarray}
+
+We can get intuition for this metric by examining common shapes. In a circle, all of the distances to the centroid would be the same. In an elipse, one would expect a skewed curve, with more points lying closer to the centroid. One can see this by examining all points on an ellipse which have distances from the centroid lying in $[d, d + \epsilon]$. The slices of the ellipse which are carved out will have strictly greater total angle than the angles carved from using distances in $[d + \epsilon, d + 2 \epsilon]$.
 
 \begin{figure}
   \begin{center}
@@ -96,15 +111,4 @@ To examine the chipping process more closely, we can look at how circular or ell
   \caption{Histogram of Vertex Distance From Centroid \label{fig:distance_from_centroid}}
 \end{figure}
 
-Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. One can see that the distribution looks fairly normal, with a mean of a distance of 0.472. The distribution of vertex distances from the centroid show that the shapes that result from this set of chipping process conditions have the same distribution as an ellipse would.
-
-Choosing a different distribution for $\mathrm{P}$ yields dramatically different results. For example, if we choose $\mathrm{P} = \mathrm{N}(0.05, 0.15)$, we obtain the distribution shown in figure \ref{fig:distance_from_centroid_skewed}.
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=4in]{distance_from_centroid_skewed.pdf}
-  \end{center}
-  \caption{Histogram of Vertex Distance From Centroid for $\mathrm{P} = \mathrm{N}(0.05, 0.15)$ \label{fig:distance_from_centroid_skewed}}
-\end{figure}
-
-One can see that the distribution of vertex distances from the centroid are skewed so that there are far more vertices which are further away from the centroid. The resulting stones are much flatter than the stones shown in figure \ref{fig:area_chipper_sample}. The intuitive explanation for this is that there is a much higher probability that the shear will not be symmetric, so that the area that is removed will be much thinner. Because of this, it is more likely that longer, thinner stones will result.
+Figure \ref{fig:distance_from_centroid} shows the distribution of vertex distances which were simulated with the same parameters as used for figure \ref{fig:area_chipper_sample}. One can see that the distribution is skewed, with most points being closer to the centroid. The distribution of vertex distances from the centroid show that the shapes that result from this set of chipping process conditions have a similar distribution as an ellipse would.
